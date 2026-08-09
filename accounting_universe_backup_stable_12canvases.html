@@ -1,0 +1,3325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>ACCOUNTING UNIVERSE – Touch. Drag. Learn. Never Forget.</title>
+<meta name="description" content="An offline-first, interactive CBSE Class XI Accountancy learning universe. Drag, drop, play, and master the accounting equation, journal entries, and ALERE rules."/>
+<style>
+/* ============== DESIGN SYSTEM ============== */
+:root{
+  --bg:#05060d;
+  --bg-2:#0a0d1a;
+  --ink:#e8ecff;
+  --ink-dim:#9aa3c7;
+  --glass: rgba(255,255,255,0.06);
+  --glass-2: rgba(255,255,255,0.10);
+  --stroke: rgba(255,255,255,0.14);
+  --neon-cyan:#33e7ff;
+  --neon-mag:#ff4dd2;
+  --neon-lime:#a3ff5c;
+  --neon-amber:#ffb547;
+  --neon-violet:#9b8bff;
+  --neon-red:#ff5577;
+  --neon-blue:#4d8bff;
+  --grad-1: linear-gradient(135deg,#33e7ff 0%,#9b8bff 60%,#ff4dd2 100%);
+  --grad-2: linear-gradient(135deg,#a3ff5c 0%,#33e7ff 100%);
+  --grad-3: linear-gradient(135deg,#ffb547 0%,#ff4dd2 100%);
+  --shadow-soft: 0 10px 40px -10px rgba(51,231,255,.35), 0 4px 18px -6px rgba(155,139,255,.35);
+  --shadow-hard: 0 20px 60px -10px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);
+  --radius: 18px;
+  --radius-sm: 12px;
+  --r-xl: 28px;
+  --font-display: "SF Pro Display","Inter","Segoe UI",system-ui,sans-serif;
+  --font-body: "Inter","SF Pro Text",system-ui,sans-serif;
+  --font-mono: "JetBrains Mono","SF Mono",ui-monospace,monospace;
+}
+
+body.light-mode {
+  --bg: #f8f9fa;
+  --bg-2: #ffffff;
+  --ink: #111827;
+  --ink-dim: #4b5563;
+  --glass: rgba(0,0,0,0.04);
+  --glass-2: rgba(0,0,0,0.08);
+  --stroke: rgba(0,0,0,0.15);
+  --neon-cyan: #0088cc;
+  --neon-mag: #cc0088;
+  --neon-lime: #16a34a;
+  --neon-amber: #d97706;
+  --neon-violet: #6d28d9;
+  --neon-red: #dc2626;
+  --neon-blue: #2563eb;
+  --grad-1: linear-gradient(135deg,#0088cc 0%,#6d28d9 60%,#cc0088 100%);
+  --shadow-soft: 0 10px 40px -10px rgba(0,0,0,.1), 0 4px 18px -6px rgba(0,0,0,.05);
+  --shadow-hard: 0 20px 60px -10px rgba(0,0,0,.15);
+}
+body.light-mode #bgfx { opacity: 0.15; }
+body.light-mode .hud { background: rgba(255,255,255,0.9); border-bottom: 1px solid var(--stroke); }
+body.light-mode .rail { background: linear-gradient(180deg, rgba(248,249,250,.9), rgba(248,249,250,0)); }
+body.light-mode select, body.light-mode option { background-color: #ffffff !important; color: #111827 !important; }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{
+  min-height:100dvh;
+  background:
+    radial-gradient(1200px 700px at 80% -10%, rgba(155,139,255,.18), transparent 60%),
+    radial-gradient(900px 600px at -10% 30%, rgba(51,231,255,.15), transparent 60%),
+    radial-gradient(800px 500px at 50% 110%, rgba(255,77,210,.15), transparent 60%),
+    linear-gradient(180deg,#04050b 0%, #07091a 100%);
+}
+img{max-width:100%}
+button{font-family:inherit;color:inherit;border:none;background:none;cursor:pointer}
+input,select{font-family:inherit;color:inherit}
+
+/* particles canvas */
+#bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
+
+/* ============== APP SHELL ============== */
+.app{position:relative;z-index:2;min-height:100dvh;display:flex;flex-direction:column}
+.hud{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;gap:12px;
+  padding:12px clamp(12px,3vw,28px);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  background: linear-gradient(180deg, rgba(8,10,22,.85), rgba(8,10,22,.55));
+  border-bottom:1px solid var(--stroke);
+}
+.brand{
+  display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:800;letter-spacing:.5px;
+}
+.brand .logo{
+  width:34px;height:34px;border-radius:10px;
+  background: conic-gradient(from 180deg,#33e7ff,#9b8bff,#ff4dd2,#a3ff5c,#33e7ff);
+  filter: drop-shadow(0 0 12px rgba(51,231,255,.55));
+  position:relative;
+}
+.brand .logo::after{
+  content:"";position:absolute;inset:3px;border-radius:8px;background:#0a0d1a;
+}
+.brand .logo::before{
+  content:"∑";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-weight:900;z-index:1;font-family:var(--font-display);
+}
+.brand .name{font-size:14px}
+.brand .name b{background:var(--grad-1);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hud-spacer{flex:1}
+.stat{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;border-radius:999px;border:1px solid var(--stroke);
+  background:var(--glass);font-size:12px;font-family:var(--font-mono);
+}
+.stat .dot{width:8px;height:8px;border-radius:50%;background:var(--neon-cyan);box-shadow:0 0 10px var(--neon-cyan)}
+.stat.lv .dot{background:var(--neon-lime);box-shadow:0 0 10px var(--neon-lime)}
+.stat.combo .dot{background:var(--neon-mag);box-shadow:0 0 10px var(--neon-mag)}
+.stat.badge .dot{background:var(--neon-amber);box-shadow:0 0 10px var(--neon-amber)}
+.sound-btn{
+  width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid var(--stroke);background:var(--glass);
+}
+.sound-btn:hover{background:var(--glass-2)}
+
+/* nav rail */
+.rail{
+  display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;
+  padding:14px clamp(12px,3vw,28px);
+  position:sticky;top:62px;z-index:40;
+  background: linear-gradient(180deg, rgba(5,6,13,.85), rgba(5,6,13,.0));
+  backdrop-filter: blur(10px);
+}
+.rail::-webkit-scrollbar{display:none}
+.rail button{
+  white-space:nowrap;
+  padding:9px 14px;border-radius:999px;
+  border:1px solid var(--stroke);
+  background:var(--glass);
+  font-size:12.5px;color:var(--ink-dim);
+  transition: transform .2s ease, background .2s ease, color .2s ease, box-shadow .2s ease;
+}
+.rail button:hover{color:var(--ink);background:var(--glass-2);transform:translateY(-1px)}
+.rail button.active{
+  color:#04060f;background:var(--grad-1);border-color:transparent;
+  box-shadow: var(--shadow-soft);
+  font-weight:700;
+}
+
+main{flex:1;padding: clamp(14px, 2.5vw, 28px); position:relative; z-index:2}
+section.screen{display:none; animation: fadeUp .5s ease both}
+section.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* Hero */
+.hero{
+  position:relative;border-radius:var(--r-xl);
+  padding: clamp(22px,4vw,46px);
+  border:1px solid var(--stroke);
+  background:
+    radial-gradient(600px 300px at 20% 0%, rgba(51,231,255,.18), transparent 70%),
+    radial-gradient(600px 300px at 90% 80%, rgba(255,77,210,.18), transparent 70%),
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  overflow:hidden;
+  box-shadow: var(--shadow-hard);
+}
+.hero h1{
+  font-family:var(--font-display);font-weight:900;letter-spacing:-.02em;
+  font-size: clamp(28px, 6vw, 64px); line-height:1.02; margin:0 0 10px;
+}
+.hero h1 span{background:var(--grad-1);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
+.hero p.lead{color:var(--ink-dim);max-width:760px;font-size:clamp(14px,1.8vw,18px);line-height:1.55}
+.hero .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.tag{padding:6px 12px;border-radius:999px;font-size:12px;border:1px solid var(--stroke);background:var(--glass)}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.btn{
+  position:relative;display:inline-flex;align-items:center;gap:10px;
+  padding:14px 20px;border-radius:14px;font-weight:700;
+  background: var(--grad-1); color:#04060f;
+  box-shadow: var(--shadow-soft);
+  transition: transform .2s cubic-bezier(.2,1.6,.4,1), filter .2s;
+}
+.btn.ghost{background:var(--glass);color:var(--ink);border:1px solid var(--stroke);box-shadow:none}
+.btn:hover{transform: translateY(-2px) scale(1.02); filter:brightness(1.05)}
+.btn:active{transform: translateY(0) scale(.98)}
+
+/* Module Grid (home) */
+.modules{
+  display:grid;gap:14px;margin-top:24px;
+  grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
+}
+.mod{
+  position:relative;border-radius:var(--radius);padding:18px;
+  border:1px solid var(--stroke);background:var(--glass);
+  transition: transform .25s ease, background .25s ease, border-color .25s;
+  cursor:pointer;overflow:hidden;min-height:150px;
+}
+.mod:hover{transform:translateY(-4px);background:var(--glass-2);border-color:rgba(255,255,255,.22)}
+.mod .num{font-family:var(--font-mono);font-size:11px;color:var(--ink-dim);letter-spacing:2px}
+.mod h3{margin:6px 0 6px;font-family:var(--font-display);font-size:18px;letter-spacing:-.01em}
+.mod p{margin:0;color:var(--ink-dim);font-size:13px;line-height:1.5}
+.mod .gleam{
+  position:absolute;inset:auto -20% -40% auto;width:200px;height:200px;border-radius:50%;
+  background: var(--grad-1);filter: blur(40px);opacity:.25;
+  transition: opacity .3s;
+}
+.mod:hover .gleam{opacity:.45}
+
+/* Panels */
+.panel{
+  border-radius:var(--r-xl);padding:clamp(16px,2.5vw,28px);
+  border:1px solid var(--stroke);background:var(--glass);
+  box-shadow: var(--shadow-hard);backdrop-filter: blur(14px);
+}
+.panel h2{font-family:var(--font-display);font-size:clamp(20px,3vw,30px);margin:0 0 4px;letter-spacing:-.01em}
+.panel .sub{color:var(--ink-dim);margin:0 0 22px;font-size:14px}
+
+/* ===== Module 1: Live Equation Tanks ===== */
+.eq-wrap{display:grid;gap:18px;grid-template-columns: 1fr;}
+@media(min-width:900px){.eq-wrap{grid-template-columns: 1.2fr .8fr}}
+.tanks{
+  display:grid;grid-template-columns: 1fr auto 1fr;align-items:end;gap:14px;
+  padding:18px;border-radius:var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+  border:1px solid var(--stroke);min-height:320px;
+}
+.tank{position:relative;height:280px;border-radius:18px;border:1px solid var(--stroke);overflow:hidden;background:rgba(0,0,0,.35)}
+.tank .liquid{
+  position:absolute;left:0;right:0;bottom:0;height:0%;
+  transition:height .9s cubic-bezier(.2,1.4,.3,1), background .4s;
+  background: linear-gradient(180deg, rgba(51,231,255,.85), rgba(51,231,255,.4));
+  box-shadow: inset 0 8px 20px rgba(255,255,255,.2);
+}
+/* Right tank stacks Capital (bottom) + Liabilities (top) so total height = Assets when balanced */
+.tank.stack .liquid.cap-l{background:linear-gradient(180deg, rgba(163,255,92,.85), rgba(163,255,92,.45));z-index:1}
+.tank.stack .liquid.lia-l{background:linear-gradient(180deg, rgba(255,77,210,.85), rgba(255,77,210,.45));z-index:2;border-top:1px dashed rgba(255,255,255,.35)}
+.tank .label{
+  position:absolute;top:10px;left:10px;right:10px;font-family:var(--font-mono);font-size:11px;
+  color:var(--ink);opacity:.9;display:flex;justify-content:space-between;z-index:3
+}
+.tank .label.mid{top:auto;bottom:38%;z-index:3}
+.tank .val{
+  position:absolute;bottom:10px;left:10px;right:10px;font-family:var(--font-display);font-weight:800;font-size:20px;
+  text-align:center;text-shadow:0 1px 8px rgba(0,0,0,.5);z-index:3
+}
+.tank .val.small{font-size:12px;font-family:var(--font-mono);font-weight:600;opacity:.9}
+.op{font-family:var(--font-display);font-size:34px;color:var(--ink-dim);align-self:center}
+.eq-controls{display:flex;flex-direction:column;gap:10px}
+.row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px}
+.input{
+  background:var(--glass);border:1px solid var(--stroke);border-radius:12px;padding:12px 14px;color:var(--ink);font-size:14px;width:100%;
+}
+.input:focus{outline:2px solid rgba(51,231,255,.6);border-color:transparent}
+.select{appearance:none;background:var(--glass);border:1px solid var(--stroke);border-radius:12px;padding:12px 14px;color:var(--ink)}
+.balance-meter{margin-top:10px;height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;position:relative}
+.balance-meter .bar{position:absolute;inset:0;width:100%;background:var(--grad-2);transition:transform .6s ease, background .4s}
+.balance-status{font-family:var(--font-mono);font-size:12px;margin-top:8px;color:var(--neon-lime)}
+.balance-status.bad{color:var(--neon-red)}
+.tx-log{margin-top:10px;max-height:160px;overflow:auto;border:1px solid var(--stroke);border-radius:12px;padding:8px}
+.tx-log .item{font-size:12px;padding:6px 8px;border-radius:8px;color:var(--ink-dim)}
+.tx-log .item b{color:var(--ink)}
+
+/* ===== Module 2: Drag & Drop Lab ===== */
+.lab{display:grid;gap:14px;grid-template-columns:1fr;}
+@media(min-width:900px){.lab{grid-template-columns: 1fr 1fr}}
+.bucket{
+  min-height:170px;border-radius:var(--radius);border:1.5px dashed rgba(255,255,255,.18);
+  padding:14px;background:rgba(255,255,255,.02);transition: border-color .2s, background .2s, transform .2s;
+}
+.bucket.dr{border-color:var(--neon-cyan);background:rgba(51,231,255,.06);transform:scale(1.01)}
+.bucket h4{margin:0 0 8px;font-family:var(--font-display);font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-dim)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  user-select:none;cursor:grab;padding:10px 12px;border-radius:12px;font-size:13px;font-weight:600;
+  background:var(--glass-2);border:1px solid var(--stroke);
+  transition: transform .15s ease, box-shadow .15s ease;
+  touch-action:none;
+}
+.chip:active{cursor:grabbing}
+.chip.drag{transform:scale(1.06) rotate(-2deg); box-shadow: 0 10px 30px rgba(0,0,0,.5)}
+.chip[data-type="A"]{box-shadow: inset 0 0 0 1px rgba(51,231,255,.5)}
+.chip[data-type="L"]{box-shadow: inset 0 0 0 1px rgba(255,77,210,.5)}
+.chip[data-type="E"]{box-shadow: inset 0 0 0 1px rgba(255,181,71,.5)}
+.chip[data-type="R"]{box-shadow: inset 0 0 0 1px rgba(163,255,92,.5)}
+.chip[data-type="Q"]{box-shadow: inset 0 0 0 1px rgba(155,139,255,.5)}
+.arrow-line{height:60px;display:grid;place-items:center;color:var(--ink-dim)}
+.impact{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.impact .cell{padding:10px;border-radius:12px;border:1px solid var(--stroke);background:rgba(255,255,255,.03);text-align:center}
+.impact .cell b{display:block;font-family:var(--font-mono);font-size:11px;color:var(--ink-dim)}
+.impact .cell .v{font-family:var(--font-display);font-weight:800;font-size:18px}
+.up{color:var(--neon-lime)} .down{color:var(--neon-red)}
+
+/* ===== Module 3: ALERE Wheel ===== */
+.wheel-wrap{display:grid;gap:16px;grid-template-columns:1fr;align-items:center}
+@media(min-width:900px){.wheel-wrap{grid-template-columns: 360px 1fr}}
+.wheel{
+  position:relative;width:min(340px,90vw);aspect-ratio:1/1;border-radius:50%;margin:0 auto;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0,0,0,.7) 0 60px, transparent 61px),
+    conic-gradient(from -90deg,
+      #33e7ff 0 20%, #ff4dd2 20% 40%, #ffb547 40% 60%, #a3ff5c 60% 80%, #9b8bff 80% 100%);
+  box-shadow: 0 0 60px rgba(51,231,255,.25), inset 0 0 30px rgba(0,0,0,.6);
+  transition: transform 1.2s cubic-bezier(.2,1.4,.3,1);
+  cursor:pointer;
+}
+.wheel .hub{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:120px;height:120px;border-radius:50%;
+  background: radial-gradient(circle, #0a0d1a 0%, #04060f 100%);
+  border:1px solid var(--stroke);display:grid;place-items:center;text-align:center;
+  font-family:var(--font-display);font-weight:900;font-size:14px;letter-spacing:.18em;
+}
+.wheel .hub small{display:block;color:var(--ink-dim);font-weight:600;font-size:10px;letter-spacing:.2em;margin-top:4px}
+.wheel .pointer{
+  position:absolute;left:50%;top:-8px;transform:translateX(-50%);
+  width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:18px solid #fff;
+  filter: drop-shadow(0 0 6px #fff);
+}
+.alere-info{padding:14px;border-radius:var(--radius);border:1px solid var(--stroke);background:rgba(255,255,255,.03)}
+.alere-info h3{margin:0 0 4px;font-family:var(--font-display);font-size:22px}
+.alere-rules{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.alere-rules div{padding:10px 12px;border-radius:12px;border:1px solid var(--stroke)}
+.alere-rules .inc{background:rgba(163,255,92,.08)}
+.alere-rules .dec{background:rgba(255,85,119,.08)}
+.alere-rules b{display:block;font-size:11px;color:var(--ink-dim);font-family:var(--font-mono);letter-spacing:.1em;text-transform:uppercase}
+.alere-meme{margin-top:10px;font-size:13px;color:var(--ink-dim);font-style:italic}
+
+/* ===== Module 4: Journal Builder ===== */
+.jb{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:900px){.jb{grid-template-columns: 1fr 1fr}}
+.jpuzzle{display:flex;flex-direction:column;gap:10px}
+.scenario{padding:14px;border-radius:14px;border:1px solid var(--stroke);background:rgba(255,255,255,.04);font-size:14px}
+.scenario b{color:var(--neon-cyan)}
+.dropzones{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dz{
+  min-height:80px;border-radius:14px;border:1.5px dashed rgba(255,255,255,.18);
+  padding:10px;background:rgba(255,255,255,.02);
+}
+.dz h5{margin:0 0 6px;font-size:11px;color:var(--ink-dim);font-family:var(--font-mono);letter-spacing:.12em}
+.dz.dr{border-color:var(--neon-cyan)}
+.amounts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:80}
+.explain{font-size:13px;color:var(--ink-dim);line-height:1.55;margin-top:8px;padding:10px;border-radius:12px;border:1px dashed var(--stroke)}
+
+/* ===== Module 5: Game ===== */
+.game-hud{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.game-hud .stat{background:var(--glass-2)}
+.mission{padding:18px;border-radius:var(--radius);border:1px solid var(--stroke);background:rgba(0,0,0,.25);font-size:15px;line-height:1.55}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.opts button{
+  padding:14px;border-radius:14px;border:1px solid var(--stroke);background:var(--glass);text-align:left;font-size:13px;
+  transition: transform .15s, background .15s, border-color .15s;
+}
+.opts button:hover{background:var(--glass-2);transform:translateY(-2px)}
+.opts button.correct{background:rgba(163,255,92,.15);border-color:var(--neon-lime)}
+.opts button.wrong{background:rgba(255,85,119,.15);border-color:var(--neon-red)}
+
+/* ===== Module 6: Memory Palace ===== */
+.palace{
+  position:relative;height:440px;border-radius:var(--r-xl);overflow:hidden;
+  background:
+    radial-gradient(900px 300px at 50% 100%, rgba(51,231,255,.18), transparent 70%),
+    linear-gradient(180deg, #050a1f 0%, #0b1130 50%, #1a0a2a 100%);
+  border:1px solid var(--stroke);
+}
+.skyline{position:absolute;inset:auto 0 0 0;height:90%;display:flex;align-items:flex-end;justify-content:space-around;padding:0 4%}
+.bldg{
+  position:relative;width:14%;max-width:120px;border-radius:14px 14px 0 0;border:1px solid var(--stroke);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  cursor:pointer;transition: transform .25s, box-shadow .25s, background .25s;
+}
+.bldg:hover{transform:translateY(-6px); box-shadow: 0 -10px 40px rgba(51,231,255,.35)}
+.bldg .lbl{position:absolute;top:-26px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:10px;color:var(--ink-dim);white-space:nowrap}
+.bldg .windows{position:absolute;inset:14px 10px 14px 10px;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.bldg .windows i{display:block;border-radius:2px;background:rgba(255,255,255,.06)}
+.bldg .windows i.on{background:var(--neon-cyan);box-shadow:0 0 8px var(--neon-cyan)}
+.bldg.a{height:60%}.bldg.b{height:80%}.bldg.c{height:70%}.bldg.d{height:90%}.bldg.e{height:55%}
+.bldg[data-k="A"] .windows i.on{background:var(--neon-cyan);box-shadow:0 0 8px var(--neon-cyan)}
+.bldg[data-k="L"] .windows i.on{background:var(--neon-mag);box-shadow:0 0 8px var(--neon-mag)}
+.bldg[data-k="E"] .windows i.on{background:var(--neon-amber);box-shadow:0 0 8px var(--neon-amber)}
+.bldg[data-k="R"] .windows i.on{background:var(--neon-lime);box-shadow:0 0 8px var(--neon-lime)}
+.bldg[data-k="Q"] .windows i.on{background:var(--neon-violet);box-shadow:0 0 8px var(--neon-violet)}
+.bldg-info{
+  position:absolute;left:50%;bottom:14px;transform:translateX(-50%);
+  background:rgba(5,6,13,.85);backdrop-filter:blur(10px);border:1px solid var(--stroke);
+  padding:12px 16px;border-radius:14px;font-size:13px;max-width:min(520px,92%);text-align:center;display:none;
+}
+.bldg-info.show{display:block; animation:fadeUp .3s ease}
+
+/* ===== Module 7: Simulator ===== */
+.sim{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:1100px){.sim{grid-template-columns: 1.1fr .9fr}}
+.sim-actions{display:flex;flex-wrap:wrap;gap:8px}
+.sim-actions button{padding:10px 14px;border-radius:12px;border:1px solid var(--stroke);background:var(--glass);font-size:12.5px}
+.sim-actions button:hover{background:var(--glass-2)}
+.ledger,.journal{
+  border:1px solid var(--stroke);border-radius:14px;overflow:hidden;background:rgba(0,0,0,.25)
+}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th,.tbl td{padding:8px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
+.tbl th{font-family:var(--font-mono);font-size:11px;color:var(--ink-dim);background:rgba(255,255,255,.03);position:sticky;top:0}
+.tbl td.amt{text-align:right;font-family:var(--font-mono)}
+.bs{
+  border:1px solid var(--stroke);border-radius:14px;padding:12px;background:rgba(0,0,0,.25)
+}
+.bs h5{margin:0 0 8px;font-family:var(--font-display);font-size:14px;letter-spacing:.04em}
+.bs .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bs .col{padding:10px;border-radius:10px;border:1px solid var(--stroke);background:rgba(255,255,255,.02)}
+.bs .ln{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+.bs .tot{font-weight:800;margin-top:6px;border-top:1px solid var(--stroke);padding-top:6px}
+
+/* ===== Module 8: What If sliders ===== */
+.whatif{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:900px){.whatif{grid-template-columns: 1fr 1fr}}
+.slider-card{padding:14px;border-radius:14px;border:1px solid var(--stroke);background:var(--glass)}
+.slider-card h5{margin:0 0 4px}
+.slider-card .v{font-family:var(--font-mono);color:var(--ink-dim);font-size:12px}
+.slider-card input[type=range]{width:100%;accent-color: var(--neon-cyan)}
+.bignum{font-family:var(--font-display);font-weight:900;font-size:clamp(36px,6vw,64px);letter-spacing:-.02em;background:var(--grad-1);-webkit-background-clip:text;background-clip:text;color:transparent;text-align:center;padding:14px}
+.net-card{padding:18px;border-radius:18px;border:1px solid var(--stroke);background: radial-gradient(400px 200px at 50% 0%, rgba(51,231,255,.18), transparent 70%), rgba(0,0,0,.25)}
+
+/* ===== Module 9: Memory Hack ===== */
+.mnemonic{
+  display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+}
+.mn{padding:18px;border-radius:18px;border:1px solid var(--stroke);background:var(--glass);position:relative;overflow:hidden}
+.mn .big{font-family:var(--font-display);font-weight:900;font-size:48px;line-height:1;margin-bottom:4px}
+.mn .word{font-weight:800;font-size:14px;margin-bottom:6px}
+.mn p{font-size:12.5px;color:var(--ink-dim);margin:0;line-height:1.5}
+.mn.a .big{color:var(--neon-cyan)}
+.mn.l .big{color:var(--neon-mag)}
+.mn.e .big{color:var(--neon-amber)}
+.mn.r .big{color:var(--neon-lime)}
+.mn.q .big{color:var(--neon-violet)}
+.mn::after{
+  content:"";position:absolute;inset:auto -30% -50% auto;width:160px;height:160px;border-radius:50%;
+  background:currentColor;opacity:.08;filter:blur(20px);
+}
+.mn.a{color:var(--neon-cyan)} .mn.l{color:var(--neon-mag)} .mn.e{color:var(--neon-amber)} .mn.r{color:var(--neon-lime)} .mn.q{color:var(--neon-violet)}
+
+/* ===== Module 10: Bento Cheat Sheet ===== */
+.bento{display:grid;gap:12px;grid-template-columns:repeat(6,1fr)}
+.bcell{
+  border-radius:18px;border:1px solid var(--stroke);background:var(--glass);
+  padding:18px;cursor:pointer;transition:transform .25s, background .25s;overflow:hidden;position:relative;
+  min-height:140px;
+}
+.bcell:hover{transform:translateY(-3px);background:var(--glass-2)}
+.bcell .ttl{font-family:var(--font-display);font-weight:800;font-size:16px;margin-bottom:6px}
+.bcell .desc{font-size:12.5px;color:var(--ink-dim);line-height:1.5}
+.bcell .more{display:none;margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--ink)}
+.bcell.open .more{display:block}
+.bcell.s1{grid-column: span 3} .bcell.s2{grid-column: span 3}
+.bcell.s3{grid-column: span 2} .bcell.s4{grid-column: span 2} .bcell.s5{grid-column: span 2}
+.bcell.s6{grid-column: span 3} .bcell.s7{grid-column: span 3}
+.bcell.s8{grid-column: span 6}
+@media(max-width:780px){
+  .bcell{grid-column: span 6 !important}
+  .bento{grid-template-columns: repeat(6,1fr)}
+}
+
+/* Footer */
+footer{
+  padding:30px clamp(12px,3vw,28px);text-align:center;color:var(--ink-dim);font-size:12.5px;
+  border-top:1px solid var(--stroke);margin-top:30px;
+  background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.4));
+}
+footer b{color:var(--ink)}
+
+/* Toasts */
+.toasts{position:fixed;top:78px;right:14px;display:flex;flex-direction:column;gap:8px;z-index:100;max-width:300px}
+.toast{
+  padding:10px 14px;border-radius:12px;backdrop-filter:blur(12px);
+  background:rgba(8,10,22,.8);border:1px solid var(--stroke);
+  font-size:13px;animation: tin .25s ease both;
+}
+.toast.win{border-color:rgba(163,255,92,.5);box-shadow:0 0 20px rgba(163,255,92,.25)}
+.toast.bad{border-color:rgba(255,85,119,.5)}
+@keyframes tin{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+/* Achievement overlay */
+.cinema{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:200;
+  background:radial-gradient(circle at center, rgba(0,0,0,.5), rgba(0,0,0,.95));
+  backdrop-filter: blur(8px);
+}
+.cinema.show{display:flex; animation:fadeUp .4s ease both}
+.cinema .card{
+  text-align:center;padding:36px;border-radius:24px;border:1px solid var(--stroke);
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+  box-shadow:0 0 80px rgba(51,231,255,.35);
+  max-width:560px;width:92%;
+}
+.cinema h2{
+  font-family:var(--font-display);font-size:clamp(28px,5vw,48px);margin:8px 0;
+  background:var(--grad-1);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.02em;
+}
+.cinema p{color:var(--ink-dim)}
+.medal{
+  width:120px;height:120px;border-radius:50%;margin:0 auto 10px;
+  background: conic-gradient(from 0deg,#ffb547,#ff4dd2,#33e7ff,#a3ff5c,#ffb547);
+  display:grid;place-items:center;
+  animation: spin 6s linear infinite;
+  box-shadow:0 0 50px rgba(255,181,71,.55);
+}
+.medal::after{content:"★";color:#04060f;font-size:60px;font-weight:900;font-family:var(--font-display);
+  width:90px;height:90px;border-radius:50%;background:#fff;display:grid;place-items:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* utility */
+[data-tooltip] {
+  position: relative;
+}
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 5px); left: 50%; transform: translateX(-50%);
+  background: #000; color: #fff;
+  padding: 6px 10px; border-radius: 8px; font-size: 11px; font-family: var(--font-body);
+  white-space: pre-wrap; width: max-content; max-width: 220px; text-align: center;
+  z-index: 1000;
+  pointer-events: none;
+  border: 1px solid var(--stroke);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  animation: fadeUp 0.2s ease;
+}
+.kbd{padding:2px 6px;border-radius:6px;background:rgba(255,255,255,.08);border:1px solid var(--stroke);font-family:var(--font-mono);font-size:11px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--stroke),transparent);margin:14px 0}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.note{font-size:12px;color:var(--ink-dim)}
+.help{font-size:11.5px;color:var(--ink-dim);margin-top:6px}
+.right{text-align:right}
+.center{text-align:center}
+@media(max-width:540px){
+  .impact{grid-template-columns:1fr}
+  .opts{grid-template-columns:1fr}
+  .dropzones{grid-template-columns:1fr}
+  .amounts{grid-template-columns:1fr}
+  .skyline{padding:0 1%}
+  .bldg{width:18%}
+}
+
+/* ===== Module 11: Final Accounts ===== */
+.fa-hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
+.fa-wrap{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:980px){.fa-wrap{grid-template-columns:300px 1fr}}
+.fa-pool{padding:12px;border:1px dashed var(--stroke);border-radius:var(--radius);background:var(--glass);min-height:120px}
+.fa-houses{display:grid;gap:12px}
+.house{padding:12px;border-radius:var(--radius);border:1px solid var(--stroke);
+  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));}
+.house h5{margin:0 0 10px;font-family:var(--font-display);letter-spacing:.5px}
+.house .dz{padding:10px;border-radius:var(--radius-sm);border:1px dashed var(--stroke);background:rgba(255,255,255,.03);min-height:90px}
+.house .dz b{display:block;font-size:11px;color:var(--ink-dim);letter-spacing:1px;margin-bottom:6px}
+.house .dz small{display:block;color:var(--ink-dim);font-size:10.5px;margin-top:6px;opacity:.7}
+.house .dz.dr{outline:1px solid var(--neon-cyan); box-shadow:0 0 0 3px rgba(51,231,255,.18) inset}
+.house.h-trad{border-color:rgba(51,231,255,.35)}
+.house.h-pl{border-color:rgba(255,77,210,.35)}
+.house.h-bs{border-color:rgba(163,255,92,.35)}
+.fa-report{margin-top:18px;display:grid;gap:14px}
+.report-card{padding:14px;border-radius:var(--radius);border:1px solid var(--stroke);background:var(--glass)}
+.report-card h4{margin:0 0 8px;font-family:var(--font-display)}
+.report-card h4 small{color:var(--ink-dim);font-weight:400;font-size:11px;margin-left:6px}
+.report-foot{margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(163,255,92,.10);border:1px solid rgba(163,255,92,.25);font-family:var(--font-mono);font-size:12.5px}
+.report-foot.loss{background:rgba(255,85,119,.12);border-color:rgba(255,85,119,.35)}
+.chip.correct{outline:2px solid var(--neon-lime);box-shadow:0 0 18px rgba(163,255,92,.45)}
+.chip.wrong{outline:2px solid var(--neon-red); animation: shake .4s}
+.shake-anim{animation: shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* ===== Module 12: Balances ===== */
+.bal-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));margin-top:10px}
+.bcard{position:relative;height:140px;perspective:800px;cursor:pointer}
+.bcard .face{position:absolute;inset:0;border-radius:var(--radius);padding:14px;
+  border:1px solid var(--stroke);background:var(--glass);
+  display:flex;flex-direction:column;justify-content:space-between;
+  backface-visibility:hidden;transition:transform .6s cubic-bezier(.7,.2,.2,1)}
+.bcard .back{transform:rotateY(180deg);background:linear-gradient(160deg, rgba(51,231,255,.12), rgba(155,139,255,.10))}
+.bcard.flip .front{transform:rotateY(180deg)}
+.bcard.flip .back{transform:rotateY(360deg)}
+.bcard .nm{font-family:var(--font-display);font-weight:800;font-size:15px}
+.bcard .ty{font-size:11px;color:var(--ink-dim);letter-spacing:1px;text-transform:uppercase}
+.bcard .side{font-family:var(--font-mono);font-weight:800;font-size:18px}
+.bcard .side.dr{color:var(--neon-cyan);text-shadow:0 0 12px rgba(51,231,255,.5)}
+.bcard .side.cr{color:var(--neon-mag);text-shadow:0 0 12px rgba(255,77,210,.5)}
+.bcard .back p{margin:0;font-size:12.5px;color:var(--ink)}
+.opts-2 button{min-height:62px;font-size:15px;font-weight:700}
+
+
+/* ===== Module 4 chip type badge ===== */
+.chip .tbadge{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;background:rgba(0,0,0,.35);color:var(--ink-dim)}
+.dz.dr.ok{border-color:var(--neon-lime);background:rgba(163,255,92,.06)}
+.dz.dr.bad{border-color:var(--neon-red);background:rgba(255,85,119,.06)}
+
+/* ===== Module 6: Journal Builder Pro ===== */
+.jbp{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:960px){.jbp{grid-template-columns: 1fr 1.2fr}}
+.jbp-lbl{display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:var(--ink-dim);text-transform:uppercase;margin-bottom:6px}
+.jbp-search{position:relative}
+.jbp-suggest{position:absolute;left:0;right:0;top:calc(100% + 4px);max-height:220px;overflow:auto;background:rgba(5,6,13,.96);backdrop-filter:blur(10px);border:1px solid var(--stroke);border-radius:12px;z-index:20;display:none}
+.jbp-suggest.show{display:block}
+.jbp-suggest button{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 12px;background:transparent;border:0;border-bottom:1px solid rgba(255,255,255,.04);color:var(--ink);text-align:left;font-size:13px;cursor:pointer}
+.jbp-suggest button:hover{background:rgba(255,255,255,.05)}
+.jbp-suggest .ttag{font-family:var(--font-mono);font-size:10px;color:var(--ink-dim);padding:2px 6px;border-radius:6px;background:rgba(255,255,255,.06)}
+.jbp-quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.jbp-quick button{padding:6px 10px;border-radius:999px;border:1px solid var(--stroke);background:rgba(255,255,255,.04);color:var(--ink);font-size:11px;font-family:var(--font-mono);letter-spacing:.04em;cursor:pointer}
+.jbp-quick button:hover{background:rgba(51,231,255,.1);border-color:var(--neon-cyan)}
+.jbp-right{display:flex;flex-direction:column;gap:10px}
+.jbp-side{border:1px solid var(--stroke);border-radius:14px;background:rgba(255,255,255,.02);padding:10px}
+.jbp-side[data-jbside="dr"]{border-left:3px solid var(--neon-cyan)}
+.jbp-side[data-jbside="cr"]{border-left:3px solid var(--neon-mag)}
+.jbp-head{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--ink-dim);text-transform:uppercase;margin-bottom:6px}
+.jbp-tot{font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--ink)}
+.jbp-rows{display:flex;flex-direction:column;gap:6px;min-height:40px}
+.jbp-row{display:grid;grid-template-columns:1fr 110px 28px;gap:6px;align-items:center;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--stroke)}
+.jbp-row .nm{font-size:13px;display:flex;align-items:center;gap:6px}
+.jbp-row .tt{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;padding:2px 5px;border-radius:5px;background:rgba(0,0,0,.35);color:var(--ink-dim)}
+.jbp-row input{padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.3);border:1px solid var(--stroke);color:var(--ink);font-family:var(--font-mono);font-size:13px;text-align:right;width:100%}
+.jbp-row .rm{background:transparent;border:1px solid var(--stroke);border-radius:8px;color:var(--ink-dim);width:28px;height:28px;cursor:pointer}
+.jbp-row .rm:hover{color:var(--neon-red);border-color:var(--neon-red)}
+.jbp-empty{font-size:12px;color:var(--ink-dim);font-style:italic;padding:4px}
+.jbp-status{padding:10px 12px;border-radius:12px;border:1px dashed var(--stroke);font-size:13px;line-height:1.55}
+.jbp-status.ok{border-color:var(--neon-lime);background:rgba(163,255,92,.08);color:#d6ffb8}
+.jbp-status.bad{border-color:var(--neon-red);background:rgba(255,85,119,.08);color:#ffc4cf}
+.chip[data-type="X"]{box-shadow: inset 0 0 0 1px rgba(255,77,210,.5)}
+select, option {
+  background-color: #1a1a2e !important;
+  color: #ffffff !important;
+}
+</style>
+</head>
+<body>
+<canvas id="bgfx"></canvas>
+
+<div class="app">
+  <header class="hud">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div class="name">ACCOUNTING <b>UNIVERSE</b></div>
+    </div>
+    <div class="hud-spacer"></div>
+    <div class="stat lv" title="Level"><span class="dot"></span><span>LV <b id="lvl">1</b></span></div>
+    <div class="stat" title="XP"><span class="dot"></span><span><b id="xp">0</b> XP</span></div>
+    <div class="stat combo" title="Combo"><span class="dot"></span><span>x<b id="combo">0</b></span></div>
+    <div class="stat badge" title="Badges"><span class="dot"></span><span><b id="badges">0</b>/8</span></div>
+    <button class="sound-btn" id="projBtn" aria-label="Toggle Projector Mode" title="Projector Mode">☀️</button>
+    <button class="sound-btn" id="fsBtn" aria-label="Toggle Fullscreen" title="Fullscreen">⛶</button>
+    <button class="sound-btn" id="soundBtn" aria-label="Toggle sound" title="Sound">🔊</button>
+  </header>
+
+  <nav class="rail" id="rail" aria-label="Modules">
+    <button data-go="home" class="active">★ Home</button>
+    <button data-go="m1">① Live Equation</button>
+    <button data-go="m2">② Transaction Lab</button>
+    <button data-go="m3">③ ALERE Wheel</button>
+    <button data-go="m4">④ Drag-Drop Lab</button>
+    <button data-go="m5">⑤ Equation Game</button>
+    <button data-go="m6">⑥ Journal Builder Pro</button>
+    <button data-go="m7">⑦ Simulator</button>
+    <button data-go="m8">⑧ What If?</button>
+    <button data-go="m9">⑨ Memory Hack</button>
+    <button data-go="m10">⑩ Cheat Sheet</button>
+    <button data-go="m11">⑪ Final Accounts</button>
+    <button data-go="m12">⑫ Dr / Cr Balances</button>
+  </nav>
+
+  <main>
+    <!-- HOME -->
+    <section class="screen active" id="home">
+      <div class="hero">
+        <div class="tags">
+          <span class="tag">CBSE Class XI · Accountancy</span>
+          <span class="tag">Offline-first</span>
+          <span class="tag">Touch · Drag · Learn</span>
+        </div>
+        <h1>ACCOUNTING <span>UNIVERSE</span><br/>Touch. Drag. Learn. <em style="font-style:normal;color:var(--neon-cyan)">Never forget.</em></h1>
+        <p class="lead">A cinematic, interactive playground that turns the accounting equation, debit–credit rules, and journal entries into something you can <em>feel</em>. No rote. Just intuition, motion, and play.</p>
+        <div class="hero-cta">
+          <button class="btn" data-go="m1">Start the Universe →</button>
+          <button class="btn ghost" data-go="m10">Open Cheat Sheet</button>
+        </div>
+      </div>
+
+      <div class="modules" id="moduleGrid"></div>
+    </section>
+
+    <!-- 1: LIVE EQUATION -->
+    <section class="screen" id="m1">
+      <div class="panel">
+        <h2>① Live Accounting Equation</h2>
+        <p class="sub">Watch the universe balance itself. <b>Assets = Capital + Liabilities.</b> Add a transaction — see the tanks fill, drain, and balance in real time.</p>
+        <div class="eq-wrap">
+          <div>
+            <div class="tanks">
+              <div class="tank a">
+                <div class="label"><span>ASSETS</span><span id="aPct">0%</span></div>
+                <div class="liquid" id="aLiq"></div>
+                <div class="val" id="aVal">₹0</div>
+              </div>
+              <div class="op">=</div>
+              <div class="tank stack" title="Capital + Liabilities stack here. Total height must equal Assets tank.">
+
+<div class="label"><span>CAPITAL + LIABILITIES</span><span id="rPct">0%</span></div>
+
+<div class="liquid cap-l" id="cLiq" style="height:0%"></div>
+
+<div class="liquid lia-l" id="lLiq" style="height:0%;bottom:0%"></div>
+
+<div class="val" id="rVal" style="position: absolute; bottom: 10px; left: 10px; right: 10px; font-weight: 800; font-size: 20px; text-align: center; color: #e8ecff; z-index: 10;">₹0</div>
+
+</div>
+            </div>
+            <div class="balance-meter"><div class="bar" id="balBar"></div></div>
+            <div class="balance-status" id="balStatus">BALANCED ✓  Assets = Capital + Liabilities</div>
+          </div>
+          <div class="eq-controls">
+            <h4 style="margin:0;font-family:var(--font-display)">Add a transaction</h4>
+            <p class="note">Choose a template. Each one rebalances the universe.</p>
+            <select class="select" id="txTemplate">
+              <option value="capital">Owner brings cash as capital</option>
+              <option value="loan">Take a bank loan (cash in)</option>
+              <option value="buy-asset-cash">Buy machinery in cash</option>
+              <option value="buy-asset-credit">Buy goods on credit</option>
+              <option value="pay-creditor">Pay creditors in cash</option>
+              <option value="revenue-cash">Earn revenue in cash</option>
+              <option value="expense-cash">Pay rent / expense in cash</option>
+              <option value="drawings">Owner withdraws cash (drawings)</option>
+            </select>
+            <input class="input" type="number" id="txAmt" min="100" step="100" placeholder="Amount (₹)" value="10000"/>
+            <button class="btn" id="txApply">⚡ Apply Transaction</button>
+            <button class="btn ghost" id="txReset">↺ Reset Universe</button>
+            <div class="tx-log" id="txLog"></div>
+          </div>
+        </div>
+        <!-- DETAILED ACCOUNT BREAKDOWN -->
+        <div class="breakdown" id="brkSection" style="margin-top:20px;padding:18px;border-radius:var(--radius);border:1px solid var(--stroke);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01))">
+          <h3 style="font-family:var(--font-display);margin:0 0 10px;font-size:16px">📋 Detailed Account Balances</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;font-size:13px">
+            <div class="brk-col" id="brkAssets">
+              <div class="brk-title" style="color:var(--neon-cyan);font-weight:700;padding-bottom:6px;border-bottom:1px solid var(--stroke);margin-bottom:6px">ASSETS</div>
+            </div>
+            <div class="brk-col" id="brkLiabilities">
+              <div class="brk-title" style="color:var(--neon-amber);font-weight:700;padding-bottom:6px;border-bottom:1px solid var(--stroke);margin-bottom:6px">LIABILITIES</div>
+            </div>
+            <div class="brk-col" id="brkCapital">
+              <div class="brk-title" style="color:var(--neon-lime);font-weight:700;padding-bottom:6px;border-bottom:1px solid var(--stroke);margin-bottom:6px">CAPITAL</div>
+            </div>
+          </div>
+          <div class="brk-total" style="margin-top:12px;padding-top:8px;border-top:1px solid var(--stroke);display:flex;justify-content:space-around;font-weight:700;font-family:var(--font-mono);font-size:14px">
+            <span style="color:var(--neon-cyan)">Assets: <span id="brkATot">₹0</span></span>
+            <span style="color:var(--neon-amber)">Liabilities: <span id="brkLTot">₹0</span></span>
+            <span style="color:var(--neon-lime)">Capital: <span id="brkCTot">₹0</span></span>
+            <span id="brkStatus" style="color:var(--neon-lime)">✓ A = C + L</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2: TRANSACTION LAB -->
+    <section class="screen" id="m2">
+      <div class="panel">
+        <h2>② Drag & Drop Transaction Lab</h2>
+        <p class="sub">Drag accounts to the <b>Debit</b> and <b>Credit</b> trays. We compute the equation impact live with animated arrows.</p>
+
+        <div class="scenario" id="m2Scene">Scenario: <b>Owner invested ₹50,000 cash into the business.</b></div>
+        <div style="display:flex;gap:8px;margin:10px 0;flex-wrap:wrap">
+          <button class="btn ghost" id="m2Next">↻ New Scenario</button>
+          <button class="btn ghost" id="m2Check">✓ Check Balance</button>
+        </div>
+
+        <div class="lab">
+          <div>
+            <h4 style="margin:8px 0;font-family:var(--font-display)">Accounts</h4>
+            <div class="chips" id="m2Pool"></div>
+          </div>
+          <div>
+            <div class="row-2">
+              <div class="bucket" data-side="debit"><h4>Debit (Dr.)</h4><div class="chips dz-chips"></div></div>
+              <div class="bucket" data-side="credit"><h4>Credit (Cr.)</h4><div class="chips dz-chips"></div></div>
+            </div>
+            <div class="impact">
+              <div class="cell"><b>Assets Δ</b><div class="v" id="m2A">₹0</div></div>
+              <div class="cell"><b>Liabilities Δ</b><div class="v" id="m2L">₹0</div></div>
+              <div class="cell"><b>Capital Δ</b><div class="v" id="m2C">₹0</div></div>
+            </div>
+            <div class="balance-meter"><div class="bar" id="m2Bar"></div></div>
+            <div class="balance-status" id="m2Status">Drop accounts to see impact</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3: ALERE WHEEL -->
+    <section class="screen" id="m3">
+      <div class="panel">
+        <h2>③ ALERE Debit–Credit Magic Engine</h2>
+        <p class="sub">Tap the wheel. Memorise <b>A·L·E·R·E</b> through motion: <em>Assets · Liabilities · Expenses · Revenue · Equity</em>.</p>
+        <div class="wheel-wrap">
+          <div>
+            <div style="position:relative;width:min(360px,92vw);margin:0 auto">
+              <div class="pointer"></div>
+              <div class="wheel" id="wheel">
+                <div class="hub" id="hub">A<small>ASSETS</small></div>
+              </div>
+            </div>
+            <div class="center" style="margin-top:14px"><button class="btn" id="spin">🎡 Spin</button></div>
+          </div>
+          <div class="alere-info" id="alereInfo">
+            <h3 id="aTitle">Assets</h3>
+            <p id="aDef" class="note">Things the business <b>owns</b> that have economic value — cash, stock, machinery, debtors.</p>
+            <div class="alere-rules">
+              <div class="inc"><b>Increase</b><span id="aInc">DEBIT (Dr.)</span></div>
+              <div class="dec"><b>Decrease</b><span id="aDec">CREDIT (Cr.)</span></div>
+            </div>
+            <div id="aExamples" style="margin-top:10px;font-size:13px;color:var(--ink-dim);line-height:1.55"></div>
+            <div id="aRule" style="margin-top:8px;font-family:var(--font-mono);font-size:12px;color:var(--neon-cyan)"></div>
+            <div class="alere-meme" id="aMeme">“Assets coming IN? Debit. Going OUT? Credit. (Cash loves the left side.)”</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4: DRAG-DROP LAB -->
+    <section class="screen" id="m4">
+      <div class="panel">
+        <h2>④ Drag-Drop Lab</h2>
+        <p class="sub">Drag account chips into <b>Debit</b> or <b>Credit</b>. The Universal Accounting Engine classifies, validates dual-aspect and confirms <b>ΔA = ΔL + ΔC</b>.</p>
+        <div class="jb">
+          <div>
+            <div class="scenario" id="jbScene"></div>
+            <h4 style="margin:14px 0 6px;font-family:var(--font-display)">Account Pieces</h4>
+            <div class="chips" id="jbPool"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+              <button class="btn ghost" id="jbNext">↻ Next Question</button>
+              <button class="btn ghost" id="jbHint">💡 Hint</button>
+            </div>
+          </div>
+          <div>
+            <div class="jpuzzle">
+              <div class="dropzones">
+                <div class="dz" data-side="debit"><h5>DEBIT (Dr.) — left</h5><div class="chips dz-chips"></div></div>
+                <div class="dz" data-side="credit"><h5>CREDIT (Cr.) — right</h5><div class="chips dz-chips"></div></div>
+              </div>
+              <div class="amounts">
+                <input class="input" type="number" min="0" id="jbDr" placeholder="Debit total ₹"/>
+                <input class="input" type="number" min="0" id="jbCr" placeholder="Credit total ₹"/>
+              </div>
+              <div class="impact" id="jbImpact">
+                <div class="cell"><b>Δ Assets</b><div class="v" id="jbDA">₹0</div></div>
+                <div class="cell"><b>Δ Liab</b><div class="v" id="jbDL">₹0</div></div>
+                <div class="cell"><b>Δ Capital</b><div class="v" id="jbDQ">₹0</div></div>
+              </div>
+              <button class="btn" id="jbCheck">✓ Validate Entry</button>
+              <div class="explain" id="jbExplain">Tip: every journal entry has at least one Debit and one Credit. Totals must match and the equation must hold.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5: EQUATION GAME -->
+    <section class="screen" id="m5">
+      <div class="panel">
+        <h2>⑤ Accounting Equation Game</h2>
+        <p class="sub">Five rapid-fire missions. Pick the correct impact on the equation. Combo streaks unlock badges.</p>
+        <div class="game-hud">
+          <div class="stat"><span class="dot"></span>Mission <b id="gMis">1</b>/5</div>
+          <div class="stat"><span class="dot"></span>Score <b id="gScore">0</b></div>
+        </div>
+        <div class="mission" id="gMission">Loading mission…</div>
+        <div class="opts" id="gOpts"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn ghost" id="gRestart">↻ Restart</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6: JOURNAL BUILDER PRO -->
+    <section class="screen" id="m6">
+      <div class="panel">
+        <h2>⑥ Journal Builder Pro</h2>
+        <p class="sub">Compose any compound journal entry. Search accounts → add rows → live engine checks dual-aspect, classification & equation impact. Hit <b>Post</b> and it flows into the Simulator, Ledger and Balance Sheet automatically.</p>
+
+        <div class="jbp">
+          <div class="jbp-left">
+            <label class="jbp-lbl">Narration / Transaction</label>
+            <input class="input" id="jbpNarr" placeholder="e.g. Sold goods to Mohan ₹5,000 on credit"/>
+
+            <label class="jbp-lbl" style="margin-top:12px">Account search</label>
+            <div class="jbp-search">
+              <input class="input" id="jbpSearch" placeholder="Type: Cash, Sales, Capital, Debtors…" autocomplete="off"/>
+              <div class="jbp-suggest" id="jbpSuggest"></div>
+            </div>
+
+            <div class="jbp-quick" id="jbpQuick"></div>
+          </div>
+
+          <div class="jbp-right">
+            <div class="jbp-side" data-jbside="dr">
+              <div class="jbp-head"><span>DEBIT (Dr.)</span><span id="jbpDrT" class="jbp-tot">₹0</span></div>
+              <div class="jbp-rows" id="jbpDrRows"></div>
+            </div>
+            <div class="jbp-side" data-jbside="cr">
+              <div class="jbp-head"><span>CREDIT (Cr.)</span><span id="jbpCrT" class="jbp-tot">₹0</span></div>
+              <div class="jbp-rows" id="jbpCrRows"></div>
+            </div>
+
+            <div class="impact">
+              <div class="cell"><b>Δ Assets</b><div class="v" id="jbpDA">₹0</div></div>
+              <div class="cell"><b>Δ Liab</b><div class="v" id="jbpDL">₹0</div></div>
+              <div class="cell"><b>Δ Capital</b><div class="v" id="jbpDQ">₹0</div></div>
+            </div>
+
+            <div class="jbp-status" id="jbpStatus">Add at least one Dr and one Cr row.</div>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+              <button class="btn" id="jbpPost">⏎ Post to Ledger</button>
+              <button class="btn ghost" id="jbpClear">↺ Clear</button>
+              <button class="btn ghost" id="jbpGoSim">→ Open Simulator</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7: SIMULATOR -->
+    <section class="screen" id="m7">
+      <div class="panel">
+        <h2>⑦ Journal Entry Simulator</h2>
+        <p class="sub">Run a business day. Each event posts to the Journal, updates the Ledger balances, and rewrites the Balance Sheet instantly.</p>
+        <div class="sim-actions">
+          <button data-sim="capital">+ Capital ₹50k</button>
+          <button data-sim="addCap">+ More Capital ₹25k (cheque)</button>
+          <button data-sim="loan">+ Bank Loan ₹20k</button>
+          <button data-sim="deposit">⇄ Deposit ₹10k to Bank</button>
+          <button data-sim="withdrawBank">⇄ Withdraw ₹5k from Bank</button>
+          <button data-sim="buyM">− Buy Machinery ₹15k (cash)</button>
+          <button data-sim="buyFurnB">− Buy Furniture ₹10k (cheque)</button>
+          <button data-sim="buyBuild">− Buy Building ₹60k (cheque)</button>
+          <button data-sim="creditP">+ Credit Purchase ₹5k</button>
+          <button data-sim="cashP">− Cash Purchase ₹4k</button>
+          <button data-sim="sale">+ Cash Sale ₹8k</button>
+          <button data-sim="creditSale">+ Credit Sale to Mohan ₹7k</button>
+          <button data-sim="recvDeb">+ Received ₹6k from Mohan</button>
+          <button data-sim="payCr">− Pay Creditor ₹3k</button>
+          <button data-sim="purRet">↩ Purchase Return ₹1k</button>
+          <button data-sim="salRet">↩ Sales Return ₹500</button>
+          <button data-sim="rent">− Pay Rent ₹2k</button>
+          <button data-sim="salary">− Pay Salary ₹5k (cheque)</button>
+          <button data-sim="wages">− Pay Wages ₹1.8k</button>
+          <button data-sim="elec">− Electricity ₹800</button>
+          <button data-sim="ins">− Insurance ₹2.4k</button>
+          <button data-sim="comm">+ Commission Received ₹1.5k</button>
+          <button data-sim="intRcvd">+ Interest Received ₹600 (cheque)</button>
+          <button data-sim="discAllow">− Discount Allowed ₹200</button>
+          <button data-sim="discRecv">+ Discount Received ₹150</button>
+          <button data-sim="dep">− Depreciation ₹1.5k</button>
+          <button data-sim="bad">− Bad Debts ₹700</button>
+          <button data-sim="outSal">+ Outstanding Salary ₹3k</button>
+          <button data-sim="prepRent">⇄ Prepaid Rent ₹6k</button>
+          <button data-sim="billPay">⇄ Issue Bill Payable ₹4k</button>
+          <button data-sim="billRcv">⇄ Accept Bill Receivable ₹3.5k</button>
+          <button data-sim="drawing">− Drawings ₹4k (cash)</button>
+          <button data-sim="reset">↺ Reset Day</button>
+        </div>
+        <div class="sim" style="margin-top:14px">
+          <div>
+            <h4 style="margin:0 0 6px;font-family:var(--font-display)">Journal</h4>
+            <div class="journal"><table class="tbl"><thead><tr><th>#</th><th>Particulars</th><th class="right">Dr ₹</th><th class="right">Cr ₹</th></tr></thead><tbody id="simJournal"></tbody></table></div>
+            <h4 style="margin:14px 0 6px;font-family:var(--font-display)">Ledger Balances</h4>
+            <div class="ledger"><table class="tbl"><thead><tr><th>Account</th><th>Type</th><th class="right">Balance ₹</th></tr></thead><tbody id="simLedger"></tbody></table></div>
+          </div>
+          <div>
+            <div class="bs">
+              <h5>Balance Sheet (Live Preview)</h5>
+              <div class="grid">
+                <div class="col">
+                  <div class="ln"><b>Liabilities & Capital</b><b>₹</b></div>
+                  <div id="bsLia"></div>
+                  <div class="ln tot"><span>Total</span><span id="bsLiaT">0</span></div>
+                </div>
+                <div class="col">
+                  <div class="ln"><b>Assets</b><b>₹</b></div>
+                  <div id="bsAst"></div>
+                  <div class="ln tot"><span>Total</span><span id="bsAstT">0</span></div>
+                </div>
+              </div>
+              <div class="balance-meter" style="margin-top:10px"><div class="bar" id="simBar"></div></div>
+              <div class="balance-status" id="simStatus">Balanced ✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8: WHAT IF -->
+    <section class="screen" id="m8">
+      <div class="panel">
+        <h2>⑧ What Happens If…</h2>
+        <p class="sub">Move sliders. The universe reacts. Net worth flexes. Discover the equation by experimentation.</p>
+        <div class="whatif">
+          <div class="slider-card">
+            <h5>Assets <span class="v">(Cash, Stock, Machinery…)</span></h5>
+            <input type="range" min="0" max="200000" step="1000" value="80000" id="sAst"/>
+            <div class="v">₹<span id="vAst">80,000</span></div>
+          </div>
+          <div class="slider-card">
+            <h5>Liabilities <span class="v">(Loans, Creditors…)</span></h5>
+            <input type="range" min="0" max="200000" step="1000" value="30000" id="sLia"/>
+            <div class="v">₹<span id="vLia">30,000</span></div>
+          </div>
+          <div class="net-card">
+            <div style="text-align:center;font-family:var(--font-mono);color:var(--ink-dim);font-size:12px">CAPITAL  =  ASSETS  −  LIABILITIES</div>
+            <div class="bignum">₹<span id="vCap">50,000</span></div>
+            <div class="balance-status center" id="vStatus">Healthy net worth ✓</div>
+          </div>
+          <div class="slider-card">
+            <h5>Insight</h5>
+            <p class="note" id="vNote">Notice how raising liabilities without raising assets crushes capital. That’s leverage.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9: MEMORY HACK -->
+    <section class="screen" id="m9">
+      <div class="panel">
+        <h2>⑨ Memory Hack Zone — A·L·E·R·E</h2>
+        <p class="sub">A mnemonic map your brain can’t unsee. Each letter has a story, a colour, a rule.</p>
+        <div class="mnemonic">
+          <div class="mn a"><div class="big">A</div><div class="word">Assets</div><p>Things you <b>own</b>. ↑ Debit · ↓ Credit. <em>“Cash loves the left.”</em></p></div>
+          <div class="mn l"><div class="big">L</div><div class="word">Liabilities</div><p>What you <b>owe</b>. ↑ Credit · ↓ Debit. <em>“Loans live on the right.”</em></p></div>
+          <div class="mn e"><div class="big">E</div><div class="word">Expenses</div><p>Money <b>spent</b>. ↑ Debit · ↓ Credit. <em>“Expenses eat the left.”</em></p></div>
+          <div class="mn r"><div class="big">R</div><div class="word">Revenue</div><p>Money <b>earned</b>. ↑ Credit · ↓ Debit. <em>“Revenue rests on the right.”</em></p></div>
+          <div class="mn q"><div class="big">E</div><div class="word">Equity / Capital</div><p>Owner’s claim. ↑ Credit · ↓ Debit. <em>“Owners cheer from the right.”</em></p></div>
+        </div>
+        <div class="divider"></div>
+        <div class="explain">
+          <b>The Golden Rhyme:</b> &nbsp; “Assets and Expenses — Debit when they rise.<br/>
+          Liabilities, Revenue, Equity — Credit makes them shine.”
+        </div>
+      </div>
+    </section>
+
+    <!-- 10: CHEAT SHEET -->
+    <section class="screen" id="m10">
+      <div class="panel">
+        <h2>⑩ Ultimate Accounting Cheat Sheet</h2>
+        <p class="sub">Bento grid. Tap any card to expand examples & a mini-quiz.</p>
+        <div class="bento" id="bento"></div>
+      </div>
+    </section>
+
+    <!-- 11: FINAL ACCOUNTS (Trading + P&L + Balance Sheet) -->
+    <section class="screen" id="m11">
+      <div class="panel">
+        <h2>⑪ Final Accounts — Trading, P&amp;L &amp; Balance Sheet</h2>
+        <p class="sub">Drag each item from the Trial Balance into its <b>correct house</b>: Trading A/c · Profit &amp; Loss A/c · Balance Sheet. The rules <em>never break</em>: <b>Direct items → Trading · Indirect items → P&amp;L · Assets/Liabilities → Balance Sheet</b>.</p>
+
+        <div class="fa-hud">
+          <div class="stat"><span class="dot"></span>Correct <b id="faOK">0</b></div>
+          <div class="stat"><span class="dot"></span>Wrong <b id="faBad">0</b></div>
+          <div class="stat"><span class="dot"></span>Remaining <b id="faRem">0</b></div>
+          <button class="btn ghost" id="faReset">↺ Reset</button>
+          <button class="btn" id="faPrepare">📜 Prepare Final Accounts</button>
+        </div>
+
+        <div class="fa-wrap">
+          <div class="fa-pool">
+            <h4 style="margin:6px 0;font-family:var(--font-display)">Trial Balance · Drag Me</h4>
+            <div class="chips" id="faPool"></div>
+          </div>
+
+          <div class="fa-houses">
+            <div class="house h-trad">
+              <h5>🛒 TRADING A/c</h5>
+              <div class="row-2">
+                <div class="dz" data-fa="trad-dr"><b>Dr.</b><div class="chips dz-chips"></div><small>Opening Stock · Purchases · Wages · Carriage Inwards · Direct Exp.</small></div>
+                <div class="dz" data-fa="trad-cr"><b>Cr.</b><div class="chips dz-chips"></div><small>Sales · Closing Stock</small></div>
+              </div>
+            </div>
+            <div class="house h-pl">
+              <h5>📈 PROFIT &amp; LOSS A/c</h5>
+              <div class="row-2">
+                <div class="dz" data-fa="pl-dr"><b>Dr.</b><div class="chips dz-chips"></div><small>Salary · Rent · Office Exp. · Depreciation · Discount Allowed</small></div>
+                <div class="dz" data-fa="pl-cr"><b>Cr.</b><div class="chips dz-chips"></div><small>Gross Profit · Commission Received · Discount Received</small></div>
+              </div>
+            </div>
+            <div class="house h-bs">
+              <h5>🏛 BALANCE SHEET</h5>
+              <div class="row-2">
+                <div class="dz" data-fa="bs-lia"><b>Liabilities</b><div class="chips dz-chips"></div><small>Capital · Loan · Creditors · Bills Payable · O/s Expenses</small></div>
+                <div class="dz" data-fa="bs-ast"><b>Assets</b><div class="chips dz-chips"></div><small>Cash · Bank · Debtors · Stock · Machinery · Furniture</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fa-report" id="faReport" hidden>
+          <div class="report-card">
+            <h4>Trading A/c <small id="faPeriod">for the year ended 31 March</small></h4>
+            <table class="tbl"><thead><tr><th>Dr. Particulars</th><th class="right">₹</th><th>Cr. Particulars</th><th class="right">₹</th></tr></thead><tbody id="faTrad"></tbody></table>
+            <div class="report-foot" id="faGP"></div>
+          </div>
+          <div class="report-card">
+            <h4>Profit &amp; Loss A/c</h4>
+            <table class="tbl"><thead><tr><th>Dr. Particulars</th><th class="right">₹</th><th>Cr. Particulars</th><th class="right">₹</th></tr></thead><tbody id="faPL"></tbody></table>
+            <div class="report-foot" id="faNP"></div>
+          </div>
+          <div class="report-card">
+            <h4>Balance Sheet <small>as at 31 March</small></h4>
+            <table class="tbl"><thead><tr><th>Liabilities</th><th class="right">₹</th><th>Assets</th><th class="right">₹</th></tr></thead><tbody id="faBS"></tbody></table>
+            <div class="report-foot" id="faBSTot"></div>
+          </div>
+          <div class="explain" id="faExplain">Rule never breaks: Gross Profit from Trading flows down into P&amp;L · Net Profit from P&amp;L flows up into Capital on Balance Sheet · Closing Stock appears in <b>both</b> Trading (Cr.) and Balance Sheet (Asset).</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12: Dr/Cr BALANCES -->
+    <section class="screen" id="m12">
+      <div class="panel">
+        <h2>⑫ Balance of Account — <span style="color:var(--neon-cyan)">Dr.</span> or <span style="color:var(--neon-mag)">Cr.</span>?</h2>
+        <p class="sub">Every account has a <b>natural balance side</b>. Tap a card to flip and see <em>why</em>. Then play the rapid quiz — never break the rule.</p>
+
+        <div class="bal-grid" id="balGrid"></div>
+
+        <div class="divider"></div>
+        <h3 style="font-family:var(--font-display);margin:8px 0">⚡ Dr/Cr Rapid Quiz</h3>
+        <div class="game-hud">
+          <div class="stat"><span class="dot"></span>Q <b id="bQ">1</b>/8</div>
+          <div class="stat"><span class="dot"></span>Score <b id="bScore">0</b></div>
+        </div>
+        <div class="mission" id="bMission">Loading…</div>
+        <div class="opts opts-2" id="bOpts"></div>
+        <div class="explain" id="bExplain">Hint: Assets &amp; Expenses → <b>Debit</b> balance. Liabilities, Revenue &amp; Capital → <b>Credit</b> balance. <em>Rule never breaks.</em></div>
+        <button class="btn ghost" id="bRestart" style="margin-top:10px">↺ Restart Quiz</button>
+      </div>
+    </section>
+
+  </main>
+
+
+  <footer>
+    © PP Creations by <b>Paras Pranav</b> · Built for curious minds of CBSE Class XI Accountancy
+  </footer>
+</div>
+
+<div class="toasts" id="toasts"></div>
+<div class="cinema" id="cinema" role="dialog" aria-modal="true">
+  <div class="card">
+    <div class="medal" aria-hidden="true"></div>
+    <h2>YOU HAVE ESCAPED ROTE LEARNING</h2>
+    <p>You don’t memorise accounting anymore. You <b>think</b> in it. The equation is now part of how you see the world.</p>
+    <div style="margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn" id="cinemaClose">Continue Exploring →</button>
+      <button class="btn ghost" id="cinemaShare">Share my journey</button>
+    </div>
+  </div>
+</div>
+
+<canvas class="confetti" id="confetti"></canvas>
+
+<script>
+/* ============ STATE ============ */
+const S = {
+  xp:0, lvl:1, combo:0, badges:new Set(), sound:true,
+};
+const $ = (q,el=document)=>el.querySelector(q);
+const $$ = (q,el=document)=>Array.from(el.querySelectorAll(q));
+const fmt = n => "₹"+Math.round(n).toLocaleString("en-IN");
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ============ SOUND ============ */
+let AC=null;
+function ac(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); return AC;}
+function beep(freq=440,dur=.08,type="sine",vol=.07){
+  if(!S.sound) return;
+  try{
+    const c=ac(), o=c.createOscillator(), g=c.createGain();
+    o.type=type; o.frequency.value=freq;
+    g.gain.value=vol;
+    o.connect(g); g.connect(c.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+dur);
+    o.stop(c.currentTime+dur+.02);
+  }catch(e){}
+}
+const sfx = {
+  tap:()=>beep(620,.05,"triangle",.05),
+  pop:()=>beep(880,.08,"square",.05),
+  good:()=>{beep(660,.08,"triangle",.07); setTimeout(()=>beep(990,.12,"triangle",.07),80)},
+  bad:()=>{beep(220,.12,"sawtooth",.05); setTimeout(()=>beep(160,.14,"sawtooth",.05),100)},
+  level:()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.12,"triangle",.07),i*90));},
+};
+$("#soundBtn").onclick=()=>{S.sound=!S.sound; $("#soundBtn").textContent=S.sound?"🔊":"🔇"; sfx.tap()};
+
+$("#projBtn").onclick=()=>{
+  document.body.classList.toggle("light-mode");
+  const isLight = document.body.classList.contains("light-mode");
+  $("#projBtn").textContent = isLight ? "🌙" : "☀️";
+  sfx.pop();
+};
+
+$("#fsBtn").onclick=()=>{
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(()=>{});
+    $("#fsBtn").textContent = "🗗";
+  } else {
+    document.exitFullscreen();
+    $("#fsBtn").textContent = "⛶";
+  }
+  sfx.tap();
+};
+
+/* ============ XP / BADGES ============ */
+function awardXP(n, reason){
+  S.xp += n;
+  const need = S.lvl*100;
+  if(S.xp >= need){ S.xp -= need; S.lvl++; sfx.level(); toast("LEVEL UP! → LV "+S.lvl,"win"); confetti(120); }
+  $("#xp").textContent=S.xp;
+  $("#lvl").textContent=S.lvl;
+  if(reason) toast("+"+n+" XP · "+reason);
+  if(S.lvl>=5 && !S.badges.has("escape")) unlockBadge("escape", true);
+}
+function bumpCombo(){ S.combo++; $("#combo").textContent=S.combo;
+  if(S.combo===3) unlockBadge("combo3");
+  if(S.combo===7) unlockBadge("combo7"); }
+function resetCombo(){ S.combo=0; $("#combo").textContent=0; }
+function unlockBadge(id, finale=false){
+  if(S.badges.has(id)) return;
+  S.badges.add(id); $("#badges").textContent=S.badges.size;
+  toast("🏅 Badge unlocked: "+id,"win"); sfx.good();
+  if(finale) showCinema();
+}
+function toast(msg,kind=""){
+  const t=document.createElement("div");
+  t.className="toast "+kind; t.textContent=msg;
+  if(kind==="bad") t.classList.add("shake-anim");
+  $("#toasts").appendChild(t);
+  setTimeout(()=>{t.style.opacity=0; t.style.transform="translateX(20px)"; setTimeout(()=>t.remove(),300)},2200);
+}
+
+/* ============ NAV ============ */
+function go(id){
+  $$("section.screen").forEach(s=>s.classList.remove("active"));
+  const tgt = $("#"+id) || $("#home");
+  tgt.classList.add("active");
+  $$("#rail button").forEach(b=>b.classList.toggle("active", b.dataset.go===id));
+  window.scrollTo({top:0,behavior:"smooth"});
+  sfx.tap();
+}
+document.addEventListener("click",e=>{
+  const b = e.target.closest("[data-go]");
+  if(b){ go(b.dataset.go); }
+});
+
+/* ============ HOME GRID ============ */
+const MODS = [
+  ["m1","① Live Equation","Tanks fill and drain. Feel A = C + L breathe."],
+  ["m2","② Transaction Lab","Drag accounts. See debit, credit & equation impact."],
+  ["m3","③ ALERE Wheel","Spin the magic engine of debit–credit rules."],
+  ["m4","④ Drag-Drop Lab","Drag accounts to Dr/Cr. Engine validates the dual aspect."],
+  ["m5","⑤ Equation Game","Five missions, combo streaks, badges."],
+  ["m6","⑥ Journal Builder Pro","Compose multi-line entries. Post live to the ledger."],
+  ["m7","⑦ Simulator","Run a business day. Journal → Ledger → Balance Sheet."],
+  ["m8","⑧ What Happens If…","Sliders that bend assets, liabilities & capital."],
+  ["m9","⑨ Memory Hack","A·L·E·R·E mnemonic that sticks for life."],
+  ["m10","⑩ Cheat Sheet","Bento cards · examples · mini-quizzes."],
+  ["m11","⑪ Final Accounts","Drag items into Trading, P&L and Balance Sheet."],
+  ["m12","⑫ Dr/Cr Balances","Every account's natural side — flip cards & quiz."],
+];
+const mg = $("#moduleGrid");
+MODS.forEach(([id,t,d],i)=>{
+  const el=document.createElement("button");
+  el.className="mod"; el.dataset.go=id;
+  el.innerHTML=`<div class="gleam"></div><div class="num">MODULE ${String(i+1).padStart(2,"0")}</div><h3>${t}</h3><p>${d}</p>`;
+  mg.appendChild(el);
+});
+
+/* ============ PARTICLES ============ */
+(function(){
+  const c=$("#bgfx"), x=c.getContext("2d"); let W,H,parts;
+  function resize(){W=c.width=innerWidth; H=c.height=innerHeight;
+    parts = Array.from({length: Math.min(90, Math.floor(W*H/22000))}, ()=>({
+      x:Math.random()*W,y:Math.random()*H, r:Math.random()*1.6+.4,
+      vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25,
+      h: 180 + Math.random()*120
+    }));
+  }
+  resize(); addEventListener("resize",resize);
+  (function loop(){
+    x.clearRect(0,0,W,H);
+    for(const p of parts){
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x+=W; if(p.x>W)p.x-=W; if(p.y<0)p.y+=H; if(p.y>H)p.y-=H;
+      x.beginPath(); x.arc(p.x,p.y,p.r,0,Math.PI*2);
+      x.fillStyle=`hsla(${p.h},90%,70%,.55)`; x.fill();
+    }
+    // light lines
+    for(let i=0;i<parts.length;i++)for(let j=i+1;j<parts.length;j++){
+      const a=parts[i],b=parts[j], dx=a.x-b.x, dy=a.y-b.y, d=dx*dx+dy*dy;
+      if(d<9000){ x.strokeStyle=`hsla(200,80%,70%,${.18*(1-d/9000)})`; x.lineWidth=.6; x.beginPath(); x.moveTo(a.x,a.y); x.lineTo(b.x,b.y); x.stroke();}
+    }
+    requestAnimationFrame(loop);
+  })();
+})();
+
+/* ============ CONFETTI ============ */
+const confettiC = $("#confetti"); let confCtx, confParts=[];
+function sizeConf(){confettiC.width=innerWidth; confettiC.height=innerHeight}
+sizeConf(); addEventListener("resize",sizeConf);
+confCtx = confettiC.getContext("2d");
+function confetti(n=120){
+  for(let i=0;i<n;i++) confParts.push({
+    x: innerWidth/2 + (Math.random()-.5)*200,
+    y: innerHeight/2,
+    vx:(Math.random()-.5)*8, vy:(Math.random()-1.2)*10,
+    g:.35, r:Math.random()*4+2,
+    c: `hsl(${Math.random()*360},90%,65%)`, life:120
+  });
+}
+(function confLoop(){
+  confCtx.clearRect(0,0,confettiC.width,confettiC.height);
+  confParts = confParts.filter(p=>p.life>0);
+  for(const p of confParts){
+    p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.life--;
+    confCtx.fillStyle=p.c; confCtx.fillRect(p.x,p.y,p.r,p.r);
+  }
+  requestAnimationFrame(confLoop);
+})();
+
+/* ============ MODULE 1: LIVE EQUATION ============ */
+const M1_ACCTS = {
+  // Assets
+  Cash:0, Bank:0, Stock:0, Debtors:0, "Bills Receivable":0,
+  Machinery:0, Furniture:0, Building:0, Vehicle:0, "Prepaid Rent":0,
+  // Liabilities
+  Creditors:0, "Bank Loan":0, "Outstanding Salary":0, "Bills Payable":0, "Outstanding Rent":0,
+  // Capital
+  Capital:0,
+  // Contra (Drawings reduces Capital)
+  Drawings:0,
+  // Temporaries (for P&L tracking, reset each time)
+  "P&L Profit":0
+};
+
+const M1_ACCT_TYPES = {
+  Cash:"A", Bank:"A", Stock:"A", Debtors:"A", "Bills Receivable":"A",
+  Machinery:"A", Furniture:"A", Building:"A", Vehicle:"A", "Prepaid Rent":"A",
+  Creditors:"L", "Bank Loan":"L", "Outstanding Salary":"L", "Bills Payable":"L", "Outstanding Rent":"L",
+  Capital:"Q", Drawings:"X", "P&L Profit":"Q"
+};
+
+const M1 = { log:[] };
+
+function m1GetA(){
+  return Object.keys(M1_ACCTS).filter(k=>M1_ACCT_TYPES[k]==="A").reduce((s,k)=>s+(M1_ACCTS[k]||0),0);
+}
+function m1GetL(){
+  return Object.keys(M1_ACCTS).filter(k=>M1_ACCT_TYPES[k]==="L").reduce((s,k)=>s+(M1_ACCTS[k]||0),0);
+}
+function m1GetC(){
+  const cap = M1_ACCTS.Capital||0;
+  const draw = M1_ACCTS.Drawings||0;
+  const pl = M1_ACCTS["P&L Profit"]||0;
+  return cap - draw + pl;
+}
+
+function m1Render(){
+  const A = m1GetA(), L = m1GetL(), C = m1GetC();
+  const right = C + L;
+  const max = Math.max(50000, A, right);
+  // Assets tank
+  $("#aLiq").style.height = clamp(A/max,0,1)*100+"%";
+  // Right tank: Capital (bottom) + Liabilities (top)
+  const cH = clamp(C/max,0,1)*100;
+  const lH = clamp(L/max,0,1)*100;
+  $("#cLiq").style.height = cH+"%";
+  $("#lLiq").style.height = lH+"%";
+  $("#lLiq").style.bottom = cH+"%";
+  $("#aVal").textContent = fmt(A);
+  const rValEl = $("#rVal");
+  if (rValEl) rValEl.textContent = fmt(C + L);
+  const cValEl = $("#cVal");
+  if (cValEl) cValEl.textContent = fmt(C);
+  const lValEl = $("#lVal");
+  if (lValEl) lValEl.textContent = fmt(L);
+  $("#aPct").textContent = Math.round(A/max*100)+"%";
+  $("#rPct").textContent = Math.round(right/max*100)+"%";
+  const diff = A - right;
+  const bal = Math.abs(diff) < 0.5;
+  $("#balBar").style.background = bal ? "var(--grad-2)" : "linear-gradient(90deg,#ff5577,#ffb547)";
+  $("#balStatus").className = "balance-status"+(bal?"":" bad");
+
+  // Dynamic Equation Construction
+  const activeAssets = Object.keys(M1_ACCTS)
+    .filter(k => M1_ACCT_TYPES[k] === "A" && (M1_ACCTS[k] || 0) !== 0)
+    .sort()
+    .map(k => {
+      const val = M1_ACCTS[k] || 0;
+      if (val < 0) {
+        return `${k} (-${fmt(Math.abs(val))})`;
+      }
+      return `${k} (${fmt(val)})`;
+    });
+
+  const activeCap = [];
+  const capVal = M1_ACCTS.Capital || 0;
+  if (capVal !== 0) {
+    if (capVal < 0) {
+      activeCap.push(`Capital (-${fmt(Math.abs(capVal))})`);
+    } else {
+      activeCap.push(`Capital (${fmt(capVal)})`);
+    }
+  }
+
+  const plVal = M1_ACCTS["P&L Profit"] || 0;
+  if (plVal !== 0) {
+    if (plVal < 0) {
+      activeCap.push(`P&L (-${fmt(Math.abs(plVal))})`);
+    } else {
+      activeCap.push(`P&L (${fmt(plVal)})`);
+    }
+  }
+
+  const drawVal = M1_ACCTS.Drawings || 0;
+  if (drawVal !== 0) {
+    if (drawVal < 0) {
+      activeCap.push(`Drawings (${fmt(Math.abs(drawVal))})`);
+    } else {
+      activeCap.push(`- Drawings (${fmt(drawVal)})`);
+    }
+  }
+
+  const activeLia = Object.keys(M1_ACCTS)
+    .filter(k => M1_ACCT_TYPES[k] === "L" && (M1_ACCTS[k] || 0) !== 0)
+    .sort()
+    .map(k => {
+      const val = M1_ACCTS[k] || 0;
+      if (val < 0) {
+        return `${k} (-${fmt(Math.abs(val))})`;
+      }
+      return `${k} (${fmt(val)})`;
+    });
+
+  const activeCapLia = [...activeCap, ...activeLia];
+
+  let eqStr = "";
+  if (activeAssets.length > 0 || activeCapLia.length > 0) {
+    const assetsStr = activeAssets.join(" + ").replace(/ \+ - /g, " - ") || "Assets (₹0)";
+    let capLiaStr = activeCapLia.join(" + ").replace(/ \+ - /g, " - ") || "Capital + Liabilities (₹0)";
+    eqStr = `${assetsStr} = ${capLiaStr}`;
+  } else {
+    eqStr = "Assets (₹0) = Capital (₹0) + Liabilities (₹0)";
+  }
+
+  const statusPrefix = bal ? "BALANCED ✓  " : `UNBALANCED ✗  (Δ = ${fmt(Math.abs(diff))})  `;
+  $("#balStatus").textContent = statusPrefix + eqStr;
+  $("#txLog").innerHTML = M1.log.slice(-12).reverse().map(t=>`<div class="item">• <b>${t.label}</b><br/><span style="font-size:11px;opacity:0.7">${t.detail}</span></div>`).join("");
+
+  // Detailed breakdown
+  const brkA = $("#brkAssets"); brkA.innerHTML = '<div class="brk-title" style="color:var(--neon-cyan);font-weight:700;padding-bottom:6px;border-bottom:1px solid var(--stroke);margin-bottom:6px">ASSETS</div>';
+  const brkL = $("#brkLiabilities"); brkL.innerHTML = '<div class="brk-title" style="color:var(--neon-amber);font-weight:700;padding-bottom:6px;border-bottom:1px solid var(--stroke);margin-bottom:6px">LIABILITIES</div>';
+  const brkC = $("#brkCapital"); brkC.innerHTML = '<div class="brk-title" style="color:var(--neon-lime);font-weight:700;padding-bottom:6px;border-bottom:1px solid var(--stroke);margin-bottom:6px">CAPITAL</div>';
+
+  const astItems = Object.keys(M1_ACCTS).filter(k=>M1_ACCT_TYPES[k]==="A").sort();
+  astItems.forEach(k=>{
+    const v = M1_ACCTS[k]||0;
+    if(v===0) return;
+    brkA.innerHTML += `<div style="display:flex;justify-content:space-between;padding:2px 0"><span>${k}</span><span style="font-family:var(--font-mono);color:var(--neon-cyan)">${fmt(v)}</span></div>`;
+  });
+
+  const liaItems = Object.keys(M1_ACCTS).filter(k=>M1_ACCT_TYPES[k]==="L").sort();
+  liaItems.forEach(k=>{
+    const v = M1_ACCTS[k]||0;
+    if(v===0) return;
+    brkL.innerHTML += `<div style="display:flex;justify-content:space-between;padding:2px 0"><span>${k}</span><span style="font-family:var(--font-mono);color:var(--neon-amber)">${fmt(v)}</span></div>`;
+  });
+
+  // Capital details
+  const cap = M1_ACCTS.Capital||0;
+  const draw = M1_ACCTS.Drawings||0;
+  const pl = M1_ACCTS["P&L Profit"]||0;
+  if(cap>0) brkC.innerHTML += `<div style="display:flex;justify-content:space-between;padding:2px 0"><span>Capital (contributed)</span><span style="font-family:var(--font-mono);color:var(--neon-lime)">${fmt(cap)}</span></div>`;
+  if(draw>0) brkC.innerHTML += `<div style="display:flex;justify-content:space-between;padding:2px 0"><span style="color:var(--neon-red)">Less: Drawings</span><span style="font-family:var(--font-mono);color:var(--neon-red)">−${fmt(draw)}</span></div>`;
+  if(pl!==0) brkC.innerHTML += `<div style="display:flex;justify-content:space-between;padding:2px 0"><span style="color:${pl>=0?'var(--neon-lime)':'var(--neon-red)'}">P&L (Revenue − Expenses)</span><span style="font-family:var(--font-mono);color:${pl>=0?'var(--neon-lime)':'var(--neon-red)'}">${pl>=0?'+':''}${fmt(pl)}</span></div>`;
+  brkC.innerHTML += `<div style="display:flex;justify-content:space-between;padding:4px 0;margin-top:4px;border-top:1px dashed var(--stroke);font-weight:700"><span>Total Capital</span><span style="font-family:var(--font-mono);color:var(--neon-lime)">${fmt(C)}</span></div>`;
+
+  $("#brkATot").textContent = fmt(A);
+  $("#brkLTot").textContent = fmt(L);
+  $("#brkCTot").textContent = fmt(C);
+  $("#brkStatus").textContent = bal ? "✓ A = C + L" : "✗ A ≠ C + L";
+  $("#brkStatus").style.color = bal ? "var(--neon-lime)" : "var(--neon-red)";
+}
+m1Render();
+
+const TPL = [
+  {id:"capital", label:"1. Owner introduced capital (cash)", desc:"Cash ↑, Capital ↑",
+   fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS.Capital+=n; }},
+  {id:"add-capital-cheque", label:"2. Additional capital by cheque", desc:"Bank ↑, Capital ↑",
+   fn:(n)=>{ M1_ACCTS.Bank+=n; M1_ACCTS.Capital+=n; }},
+  {id:"bank-loan", label:"3. Bank loan received (credited to cash)", desc:"Cash ↑, Bank Loan ↑",
+   fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS["Bank Loan"]+=n; }},
+  {id:"bank-loan-bank", label:"4. Bank loan credited to bank account", desc:"Bank ↑, Bank Loan ↑",
+   fn:(n)=>{ M1_ACCTS.Bank+=n; M1_ACCTS["Bank Loan"]+=n; }},
+  {id:"cash-deposit", label:"5. Cash deposited into bank", desc:"Bank ↑, Cash ↓ (asset swap)",
+   fn:(n)=>{ M1_ACCTS.Bank+=n; M1_ACCTS.Cash-=n; }},
+  {id:"bank-withdraw", label:"6. Cash withdrawn from bank", desc:"Cash ↑, Bank ↓ (asset swap)",
+   fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS.Bank-=n; }},
+  {id:"cash-sale", label:"7. Cash sale of goods", desc:"Cash ↑, P&L Profit ↑ (Revenue swells Capital)",
+   fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS["P&L Profit"]+=n; }},
+  {id:"credit-sale", label:"8. Credit sale to Mohan", desc:"Debtors ↑, P&L Profit ↑",
+   fn:(n)=>{ M1_ACCTS.Debtors+=n; M1_ACCTS["P&L Profit"]+=n; }},
+  {id:"cash-purchase", label:"9. Cash purchase of goods (stock)", desc:"Stock ↑, Cash ↓ (asset swap)",
+   fn:(n)=>{ M1_ACCTS.Stock+=n; M1_ACCTS.Cash-=n; }},
+  {id:"credit-purchase", label:"10. Credit purchase (goods on credit)", desc:"Stock ↑, Creditors ↑",
+   fn:(n)=>{ M1_ACCTS.Stock+=n; M1_ACCTS.Creditors+=n; }},
+  {id:"pay-creditor", label:"11. Paid creditor in cash", desc:"Cash ↓, Creditors ↓",
+   fn:(n)=>{ M1_ACCTS.Cash-=n; M1_ACCTS.Creditors-=n; }},
+  {id:"receive-debtor", label:"12. Received cash from debtor", desc:"Cash ↑, Debtors ↓ (asset swap)",
+   fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS.Debtors-=n; }},
+  {id:"buy-machinery", label:"13. Bought machinery for cash", desc:"Machinery ↑, Cash ↓ (asset swap)",
+   fn:(n)=>{ M1_ACCTS.Machinery+=n; M1_ACCTS.Cash-=n; }},
+  {id:"buy-furniture", label:"14. Bought furniture by cheque", desc:"Furniture ↑, Bank ↓ (asset swap)",
+   fn:(n)=>{ M1_ACCTS.Furniture+=n; M1_ACCTS.Bank-=n; }},
+  {id:"pay-rent", label:"15. Paid rent in cash", desc:"Cash ↓, P&L Profit ↓ (Expense reduces Capital)",
+   fn:(n)=>{ M1_ACCTS.Cash-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"pay-salary", label:"16. Paid salary by cheque", desc:"Bank ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Bank-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"pay-wages", label:"17. Paid wages in cash", desc:"Cash ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Cash-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"electricity", label:"18. Paid electricity bill", desc:"Cash ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Cash-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"commission", label:"19. Commission received in cash", desc:"Cash ↑, P&L Profit ↑",
+   fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS["P&L Profit"]+=n; }},
+  {id:"insurance", label:"20. Paid insurance premium", desc:"Cash ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Cash-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"interest-received", label:"21. Interest received by cheque", desc:"Bank ↑, P&L Profit ↑",
+   fn:(n)=>{ M1_ACCTS.Bank+=n; M1_ACCTS["P&L Profit"]+=n; }},
+  {id:"drawings", label:"22. Owner withdrew cash (drawings)", desc:"Cash ↓, Drawings ↑ (reduces Capital)",
+   fn:(n)=>{ M1_ACCTS.Cash-=n; M1_ACCTS.Drawings+=n; }},
+  {id:"buy-building", label:"23. Bought building by cheque", desc:"Building ↑, Bank ↓ (asset swap)",
+   fn:(n)=>{ M1_ACCTS.Building+=n; M1_ACCTS.Bank-=n; }},
+  {id:"buy-vehicle", label:"24. Bought delivery vehicle (cash+credit)", desc:"Vehicle ↑, Cash ↓, Creditors ↑",
+   fn:(n)=>{ M1_ACCTS.Vehicle+=n; M1_ACCTS.Cash-=Math.round(n/2); M1_ACCTS.Creditors+=Math.round(n/2); }},
+  {id:"prepaid-rent", label:"25. Rent paid in advance (prepaid)", desc:"Prepaid Rent ↑, Cash ↓ (asset swap)",
+   fn:(n)=>{ M1_ACCTS["Prepaid Rent"]+=n; M1_ACCTS.Cash-=n; }},
+  {id:"outstanding-salary", label:"26. Salary outstanding at year-end", desc:"Outstanding Salary ↑, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS["Outstanding Salary"]+=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"bill-payable", label:"27. Issued Bills Payable to creditor", desc:"Creditors ↓, Bills Payable ↑ (liab swap)",
+   fn:(n)=>{ M1_ACCTS.Creditors-=n; M1_ACCTS["Bills Payable"]+=n; }},
+  {id:"bill-receivable", label:"28. Accepted Bill Receivable from debtor", desc:"Bills Receivable ↑, Debtors ↓ (asset swap)",
+   fn:(n)=>{ M1_ACCTS["Bills Receivable"]+=n; M1_ACCTS.Debtors-=n; }},
+  {id:"depreciation", label:"29. Depreciation on machinery", desc:"Machinery ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Machinery-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"bad-debts", label:"30. Bad debts written off", desc:"Debtors ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Debtors-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"life-insurance", label:"31. Paid owner's life insurance", desc:"Cash ↓, Drawings ↑",
+   fn:(n)=>{ M1_ACCTS.Cash-=n; M1_ACCTS.Drawings+=n; }},
+  {id:"income-tax", label:"32. Paid income tax by cheque", desc:"Bank ↓, Drawings ↑",
+   fn:(n)=>{ M1_ACCTS.Bank-=n; M1_ACCTS.Drawings+=n; }},
+  {id:"free-samples", label:"33. Goods distributed as free samples", desc:"Stock ↓, P&L Profit ↓ (Expense)",
+   fn:(n)=>{ M1_ACCTS.Stock-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"charity-goods", label:"34. Goods given as charity", desc:"Stock ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Stock-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"loss-fire", label:"35. Goods destroyed by fire", desc:"Stock ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Stock-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"installation", label:"36. Installation charges on machinery", desc:"Machinery ↑, Cash ↓ (Capitalized)",
+   fn:(n)=>{ M1_ACCTS.Machinery+=n; M1_ACCTS.Cash-=n; }},
+  {id:"bank-charges", label:"37. Bank charged for services", desc:"Bank ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Bank-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"bank-interest", label:"38. Interest allowed by bank", desc:"Bank ↑, P&L Profit ↑",
+   fn:(n)=>{ M1_ACCTS.Bank+=n; M1_ACCTS["P&L Profit"]+=n; }},
+  {id:"interest-capital", label:"39. Interest on Capital provided", desc:"Capital ↑, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Capital+=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"interest-drawings", label:"40. Interest charged on Drawings", desc:"Drawings ↑, P&L Profit ↑",
+   fn:(n)=>{ M1_ACCTS.Drawings+=n; M1_ACCTS["P&L Profit"]+=n; }},
+  {id:"unearned-rent", label:"41. Rent received in advance", desc:"Cash ↑, Unearned Income ↑",
+   fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS["Unearned Income"]+=n; }},
+  {id:"accrued-comm", label:"42. Accrued Commission", desc:"Accrued Income ↑, P&L Profit ↑",
+   fn:(n)=>{ M1_ACCTS["Accrued Income"]+=n; M1_ACCTS["P&L Profit"]+=n; }},
+  {id:"old-newspapers", label:"43. Sold old newspapers", desc:"Cash ↑, P&L Profit ↑",
+   fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS["P&L Profit"]+=n; }},
+  {id:"carriage", label:"44. Paid carriage inward", desc:"Cash ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Cash-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"bad-debts-rec", label:"45. Bad debts recovered", desc:"Cash ↑, P&L Profit ↑",
+   fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS["P&L Profit"]+=n; }},
+  {id:"stationery", label:"46. Purchased office stationery", desc:"Cash ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Cash-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"repairs", label:"47. Paid machinery repairs", desc:"Cash ↓, P&L Profit ↓",
+   fn:(n)=>{ M1_ACCTS.Cash-=n; M1_ACCTS["P&L Profit"]-=n; }},
+  {id:"drawings-goods", label:"48. Goods withdrawn for personal use", desc:"Stock ↓, Drawings ↑",
+   fn:(n)=>{ M1_ACCTS.Stock-=n; M1_ACCTS.Drawings+=n; }},
+  {id:"security-dep", label:"49. Received security deposit from tenant", desc:"Cash ↑, Creditors ↑ (Liability)",
+   fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS.Creditors+=n; }},
+  {id:"accrued-int", label:"50. Accrued interest on investments", desc:"Accrued Income ↑, P&L Profit ↑",
+   fn:(n)=>{ M1_ACCTS["Accrued Income"]+=n; M1_ACCTS["P&L Profit"]+=n; }}
+];
+// Rebuild the select options
+const sel = $("#txTemplate");
+sel.innerHTML = TPL.map(t=>`<option value="${t.id}">${t.label}</option>`).join("");
+
+$("#txApply").onclick=()=>{
+  const k=$("#txTemplate").value, n=+($("#txAmt").value||0);
+  if(!n||n<=0){toast("Enter an amount","bad");sfx.bad();return}
+  const tpl = TPL.find(t=>t.id===k);
+  if(!tpl) return;
+
+  // 1. Pre-Transaction Validation: save current state for simulation/rollback
+  const backup = {};
+  for (const acct in M1_ACCTS) {
+    backup[acct] = M1_ACCTS[acct];
+  }
+
+  // Simulate/Apply transaction temporarily
+  tpl.fn(n);
+
+  // 2 & 3. Validate guardrails (block negative physical assets and liabilities)
+  let isInvalid = false;
+  let invalidReason = "";
+  for (const acct in M1_ACCTS) {
+    if ((M1_ACCT_TYPES[acct] === "A" || M1_ACCT_TYPES[acct] === "L") && (M1_ACCTS[acct] || 0) < 0) {
+      isInvalid = true;
+      invalidReason = acct;
+      break;
+    }
+  }
+
+  if (isInvalid) {
+    // 4. User Feedback and Rollback state
+    for (const acct in backup) {
+      M1_ACCTS[acct] = backup[acct];
+    }
+    sfx.bad();
+    toast("Transaction blocked", "bad");
+    alert(`⚠️ Invalid Transaction: Insufficient balance in ${invalidReason}. Account cannot be negative.`);
+    return;
+  }
+
+  // Transaction is valid, proceed
+  M1.log.push({label:tpl.label, detail:tpl.desc + "  Amount: " + fmt(n)});
+  sfx.pop(); m1Render(); awardXP(8,"Transaction applied");
+};
+$("#txReset").onclick=()=>{
+  Object.keys(M1_ACCTS).forEach(k=>M1_ACCTS[k]=0);
+  M1.log=[]; m1Render(); sfx.tap();
+};
+
+/* ============ DRAG HELPER (pointer-based, works touch+mouse) ============ */
+function makeDraggable(chip, onDrop){
+  chip.addEventListener("pointerdown",ev=>{
+    ev.preventDefault();
+    chip.setPointerCapture(ev.pointerId);
+    const r = chip.getBoundingClientRect();
+    const ox = ev.clientX - r.left, oy = ev.clientY - r.top;
+    const clone = chip.cloneNode(true);
+    clone.style.position="fixed"; clone.style.left=r.left+"px"; clone.style.top=r.top+"px";
+    clone.style.width=r.width+"px"; clone.style.zIndex=999; clone.style.pointerEvents="none";
+    clone.classList.add("drag"); document.body.appendChild(clone);
+    chip.style.opacity=.35;
+    let lastEl=null;
+    function move(e){
+      clone.style.left=(e.clientX-ox)+"px"; clone.style.top=(e.clientY-oy)+"px";
+      const under = document.elementFromPoint(e.clientX,e.clientY);
+      const bucket = under && under.closest("[data-side],[data-drop]");
+      if(lastEl && lastEl!==bucket) lastEl.classList.remove("dr");
+      if(bucket){ bucket.classList.add("dr"); lastEl=bucket; }
+    }
+    function up(e){
+      chip.releasePointerCapture(ev.pointerId);
+      document.removeEventListener("pointermove",move);
+      document.removeEventListener("pointerup",up);
+      const under = document.elementFromPoint(e.clientX,e.clientY);
+      const bucket = under && under.closest("[data-side],[data-drop]");
+      if(lastEl) lastEl.classList.remove("dr");
+      clone.remove(); chip.style.opacity="";
+      if(bucket){ sfx.pop(); onDrop && onDrop(bucket); }
+    }
+    document.addEventListener("pointermove",move);
+    document.addEventListener("pointerup",up);
+  });
+}
+
+/* ============ MODULE 2: TRANSACTION LAB ============ */
+const M2_SCENES = [
+  {text:"Owner invested ₹50,000 cash into the business.", amt:50000,
+   pool:[["Cash","A","dr"],["Capital","Q","cr"],["Bank Loan","L"],["Rent","E"]],
+   right:{debit:["Cash"], credit:["Capital"]},
+   delta:{A:+50000,L:0,C:+50000}, why:"Cash (Asset) ↑ → Debit. Capital (Equity) ↑ → Credit."},
+  {text:"Took a bank loan of ₹20,000 — credited to cash.", amt:20000,
+   pool:[["Cash","A","dr"],["Bank Loan","L","cr"],["Capital","Q"],["Sales","R"]],
+   right:{debit:["Cash"], credit:["Bank Loan"]},
+   delta:{A:+20000,L:+20000,C:0}, why:"Cash (Asset) ↑ → Debit. Loan (Liability) ↑ → Credit."},
+  {text:"Bought machinery for ₹15,000 in cash.", amt:15000,
+   pool:[["Machinery","A","dr"],["Cash","A","cr"],["Creditors","L"],["Capital","Q"]],
+   right:{debit:["Machinery"], credit:["Cash"]},
+   delta:{A:0,L:0,C:0}, why:"Machinery (Asset) ↑ → Dr. Cash (Asset) ↓ → Cr. Asset swap — total assets unchanged."},
+  {text:"Paid office rent ₹2,000 in cash.", amt:2000,
+   pool:[["Rent","E","dr"],["Cash","A","cr"],["Capital","Q"],["Sales","R"]],
+   right:{debit:["Rent"], credit:["Cash"]},
+   delta:{A:-2000,L:0,C:-2000}, why:"Rent (Expense) ↑ → Dr. Cash ↓ → Cr. Expense shrinks Capital."},
+  {text:"Cash sales of goods ₹8,000.", amt:8000,
+   pool:[["Cash","A","dr"],["Sales","R","cr"],["Capital","Q"],["Rent","E"]],
+   right:{debit:["Cash"], credit:["Sales"]},
+   delta:{A:+8000,L:0,C:+8000}, why:"Cash ↑ → Dr. Sales (Revenue) ↑ → Cr. Revenue swells Capital."},
+  {text:"Purchased goods on credit from Ramesh ₹10,000.", amt:10000,
+   pool:[["Purchases","E","dr"],["Creditors","L","cr"],["Cash","A"],["Sales","R"]],
+   right:{debit:["Purchases"], credit:["Creditors"]},
+   delta:{A:+10000,L:+10000,C:0}, why:"Stock acquired (treated via Purchases) ↑ → Dr. Creditor (Liability) ↑ → Cr."},
+  {text:"Sold goods to Mohan on credit ₹7,000.", amt:7000,
+   pool:[["Debtors","A","dr"],["Sales","R","cr"],["Cash","A"],["Creditors","L"]],
+   right:{debit:["Debtors"], credit:["Sales"]},
+   delta:{A:+7000,L:0,C:+7000}, why:"Debtor (Asset) ↑ → Dr. Sales (Revenue) ↑ → Cr."},
+  {text:"Received ₹6,000 from Mohan (debtor) in cash.", amt:6000,
+   pool:[["Cash","A","dr"],["Debtors","A","cr"],["Sales","R"],["Capital","Q"]],
+   right:{debit:["Cash"], credit:["Debtors"]},
+   delta:{A:0,L:0,C:0}, why:"Cash ↑ → Dr. Debtors ↓ → Cr. Asset swap inside Assets."},
+  {text:"Paid ₹4,000 to creditor Ramesh by cash.", amt:4000,
+   pool:[["Creditors","L","dr"],["Cash","A","cr"],["Sales","R"],["Capital","Q"]],
+   right:{debit:["Creditors"], credit:["Cash"]},
+   delta:{A:-4000,L:-4000,C:0}, why:"Liability ↓ → Dr. Cash ↓ → Cr."},
+  {text:"Owner withdrew ₹3,000 cash for personal use.", amt:3000,
+   pool:[["Drawings","X","dr"],["Cash","A","cr"],["Capital","Q"],["Sales","R"]],
+   right:{debit:["Drawings"], credit:["Cash"]},
+   delta:{A:-3000,L:0,C:-3000}, why:"Drawings ↑ (Dr.) reduces Capital. Cash ↓ → Cr."},
+  {text:"Deposited ₹10,000 cash into bank.", amt:10000,
+   pool:[["Bank","A","dr"],["Cash","A","cr"],["Capital","Q"],["Sales","R"]],
+   right:{debit:["Bank"], credit:["Cash"]},
+   delta:{A:0,L:0,C:0}, why:"Bank ↑, Cash ↓. Contra entry — assets unchanged."},
+  {text:"Withdrew ₹2,000 from bank for office use.", amt:2000,
+   pool:[["Cash","A","dr"],["Bank","A","cr"],["Capital","Q"],["Rent","E"]],
+   right:{debit:["Cash"], credit:["Bank"]},
+   delta:{A:0,L:0,C:0}, why:"Cash ↑, Bank ↓. Another asset-to-asset swap."},
+  {text:"Paid salary ₹5,000 by cheque.", amt:5000,
+   pool:[["Salary","E","dr"],["Bank","A","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Salary"], credit:["Bank"]},
+   delta:{A:-5000,L:0,C:-5000}, why:"Salary (Expense) ↑ → Dr. Bank ↓ → Cr."},
+  {text:"Received commission ₹1,500 in cash.", amt:1500,
+   pool:[["Cash","A","dr"],["Commission Received","R","cr"],["Sales","R"],["Capital","Q"]],
+   right:{debit:["Cash"], credit:["Commission Received"]},
+   delta:{A:+1500,L:0,C:+1500}, why:"Cash ↑ → Dr. Revenue ↑ → Cr."},
+  {text:"Paid electricity bill ₹800 in cash.", amt:800,
+   pool:[["Electricity","E","dr"],["Cash","A","cr"],["Bank","A"],["Capital","Q"]],
+   right:{debit:["Electricity"], credit:["Cash"]},
+   delta:{A:-800,L:0,C:-800}, why:"Expense ↑ → Dr. Cash ↓ → Cr."},
+  {text:"Purchased furniture ₹12,000 by cheque.", amt:12000,
+   pool:[["Furniture","A","dr"],["Bank","A","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Furniture"], credit:["Bank"]},
+   delta:{A:0,L:0,C:0}, why:"Asset ↑, Asset ↓. Total assets unchanged."},
+  {text:"Returned goods to creditor (Purchase Return) ₹1,000.", amt:1000,
+   pool:[["Creditors","L","dr"],["Purchase Returns","R","cr"],["Cash","A"],["Sales","R"]],
+   right:{debit:["Creditors"], credit:["Purchase Returns"]},
+   delta:{A:0,L:-1000,C:+1000}, why:"Liability ↓ → Dr. Purchase Returns reduces purchases → Cr (income side)."},
+  {text:"Goods returned by Mohan (Sales Return) ₹500.", amt:500,
+   pool:[["Sales Returns","E","dr"],["Debtors","A","cr"],["Sales","R"],["Cash","A"]],
+   right:{debit:["Sales Returns"], credit:["Debtors"]},
+   delta:{A:-500,L:0,C:-500}, why:"Sales Returns (contra revenue) ↑ → Dr. Debtor ↓ → Cr."},
+  {text:"Paid wages ₹1,800 in cash.", amt:1800,
+   pool:[["Wages","E","dr"],["Cash","A","cr"],["Capital","Q"],["Sales","R"]],
+   right:{debit:["Wages"], credit:["Cash"]},
+   delta:{A:-1800,L:0,C:-1800}, why:"Wages (Expense) ↑ → Dr. Cash ↓ → Cr."},
+  {text:"Received interest ₹600 by cheque.", amt:600,
+   pool:[["Bank","A","dr"],["Interest Received","R","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Bank"], credit:["Interest Received"]},
+   delta:{A:+600,L:0,C:+600}, why:"Bank ↑ → Dr. Income ↑ → Cr."},
+  {text:"Paid insurance premium ₹2,400 by cash.", amt:2400,
+   pool:[["Insurance","E","dr"],["Cash","A","cr"],["Bank","A"],["Sales","R"]],
+   right:{debit:["Insurance"], credit:["Cash"]},
+   delta:{A:-2400,L:0,C:-2400}, why:"Insurance (Expense) ↑ → Dr. Cash ↓ → Cr."},
+  {text:"Bought a delivery vehicle ₹80,000 — paid ₹30,000 cash, balance on credit.", amt:80000,
+   pool:[["Vehicle","A","dr"],["Cash","A","cr"],["Creditors","L","cr"],["Capital","Q"]],
+   right:{debit:["Vehicle"], credit:["Cash","Creditors"]},
+   delta:{A:+50000,L:+50000,C:0}, why:"Vehicle ↑ ₹80k Dr. Cash ↓ ₹30k Cr + Creditors ↑ ₹50k Cr."},
+  {text:"Issued cheque ₹5,000 to creditor (full settlement of ₹5,200; discount ₹200).", amt:5200,
+   pool:[["Creditors","L","dr"],["Bank","A","cr"],["Discount Received","R","cr"],["Cash","A"]],
+   right:{debit:["Creditors"], credit:["Bank","Discount Received"]},
+   delta:{A:-5000,L:-5200,C:+200}, why:"Liability ↓ ₹5,200 Dr. Bank ↓ ₹5,000 Cr + Discount Received ₹200 Cr (income)."},
+  {text:"Charged depreciation on machinery ₹1,500.", amt:1500,
+   pool:[["Depreciation","E","dr"],["Machinery","A","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Depreciation"], credit:["Machinery"]},
+   delta:{A:-1500,L:0,C:-1500}, why:"Depreciation (Expense) ↑ → Dr. Machinery (Asset) ↓ → Cr. No cash moves."},
+  {text:"Bad debts written off ₹700 (Mohan insolvent).", amt:700,
+   pool:[["Bad Debts","E","dr"],["Debtors","A","cr"],["Cash","A"],["Sales","R"]],
+   right:{debit:["Bad Debts"], credit:["Debtors"]},
+   delta:{A:-700,L:0,C:-700}, why:"Loss (Expense) ↑ → Dr. Debtor ↓ → Cr."},
+  {text:"Salary ₹3,000 outstanding (unpaid) at year end.", amt:3000,
+   pool:[["Salary","E","dr"],["Outstanding Salary","L","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Salary"], credit:["Outstanding Salary"]},
+   delta:{A:0,L:+3000,C:-3000}, why:"Expense ↑ → Dr. Liability (Outstanding Salary) ↑ → Cr."},
+  {text:"Paid rent ₹6,000 in advance for next 6 months.", amt:6000,
+   pool:[["Prepaid Rent","A","dr"],["Cash","A","cr"],["Rent","E"],["Capital","Q"]],
+   right:{debit:["Prepaid Rent"], credit:["Cash"]},
+   delta:{A:0,L:0,C:0}, why:"Prepaid Rent (Asset) ↑ → Dr. Cash ↓ → Cr. Asset swap."},
+  {text:"Issued a Bill of Exchange to creditor for ₹4,000.", amt:4000,
+   pool:[["Creditors","L","dr"],["Bills Payable","L","cr"],["Cash","A"],["Sales","R"]],
+   right:{debit:["Creditors"], credit:["Bills Payable"]},
+   delta:{A:0,L:0,C:0}, why:"One liability ↓ (Dr.), another liability ↑ (Cr.). Liability swap."},
+  {text:"Accepted Bill Receivable from Mohan ₹3,500.", amt:3500,
+   pool:[["Bills Receivable","A","dr"],["Debtors","A","cr"],["Cash","A"],["Sales","R"]],
+   right:{debit:["Bills Receivable"], credit:["Debtors"]},
+   delta:{A:0,L:0,C:0}, why:"Asset swap inside current assets."},
+  {text:"Sold old furniture for ₹2,500 cash (book value ₹2,500).", amt:2500,
+   pool:[["Cash","A","dr"],["Furniture","A","cr"],["Sales","R"],["Capital","Q"]],
+   right:{debit:["Cash"], credit:["Furniture"]},
+   delta:{A:0,L:0,C:0}, why:"Cash ↑ → Dr. Furniture ↓ → Cr. Asset swap."},
+  {text:"Owner paid Life Insurance Premium from business cash ₹2,000.", amt:2000,
+   pool:[["Drawings","X","dr"],["Cash","A","cr"],["Insurance","E"],["Capital","Q"]],
+   right:{debit:["Drawings"], credit:["Cash"]},
+   delta:{A:-2000,L:0,C:-2000}, why:"Life insurance of owner is personal → Drawings (Dr). Cash ↓ (Cr)."},
+  {text:"Paid Income Tax from business bank account ₹5,000.", amt:5000,
+   pool:[["Drawings","X","dr"],["Bank","A","cr"],["Tax Expense","E"],["Capital","Q"]],
+   right:{debit:["Drawings"], credit:["Bank"]},
+   delta:{A:-5000,L:0,C:-5000}, why:"Proprietor's income tax is a personal expense → Drawings (Dr). Bank ↓ (Cr)."},
+  {text:"Goods costing ₹1,000 distributed as free samples.", amt:1000,
+   pool:[["Advertisement","E","dr"],["Purchases","E","cr"],["Sales","R"],["Cash","A"]],
+   right:{debit:["Advertisement"], credit:["Purchases"]},
+   delta:{A:0,L:0,C:0}, why:"Advertisement expense ↑ (Dr). Goods leave without sale → Purchases ↓ (Cr)."},
+  {text:"Goods costing ₹500 given away as charity.", amt:500,
+   pool:[["Charity","E","dr"],["Purchases","E","cr"],["Sales","R"],["Cash","A"]],
+   right:{debit:["Charity"], credit:["Purchases"]},
+   delta:{A:0,L:0,C:0}, why:"Charity expense ↑ (Dr). Goods leave without sale → Purchases ↓ (Cr)."},
+  {text:"Goods worth ₹2,000 destroyed by fire (uninsured).", amt:2000,
+   pool:[["Loss by Fire","E","dr"],["Purchases","E","cr"],["Sales","R"],["Cash","A"]],
+   right:{debit:["Loss by Fire"], credit:["Purchases"]},
+   delta:{A:0,L:0,C:0}, why:"Abnormal loss ↑ (Dr). Goods destroyed → Purchases ↓ (Cr)."},
+  {text:"Paid installation charges on new machinery ₹3,000.", amt:3000,
+   pool:[["Machinery","A","dr"],["Cash","A","cr"],["Wages","E"],["Repairs","E"]],
+   right:{debit:["Machinery"], credit:["Cash"]},
+   delta:{A:0,L:0,C:0}, why:"Expenses to bring an asset to usable condition are capitalized (added to Asset)."},
+  {text:"Bank charged ₹200 for services.", amt:200,
+   pool:[["Bank Charges","E","dr"],["Bank","A","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Bank Charges"], credit:["Bank"]},
+   delta:{A:-200,L:0,C:-200}, why:"Expense ↑ (Dr). Bank balance ↓ (Cr)."},
+  {text:"Interest allowed by bank ₹150.", amt:150,
+   pool:[["Bank","A","dr"],["Interest Received","R","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Bank"], credit:["Interest Received"]},
+   delta:{A:+150,L:0,C:+150}, why:"Bank balance ↑ (Dr). Income/Revenue ↑ (Cr)."},
+  {text:"Interest on Capital provided at 10% on ₹50,000 (₹5,000).", amt:5000,
+   pool:[["Interest on Capital","E","dr"],["Capital","Q","cr"],["Cash","A"],["Interest Received","R"]],
+   right:{debit:["Interest on Capital"], credit:["Capital"]},
+   delta:{A:0,L:0,C:0}, why:"Expense for business ↑ (Dr). Owner's claim (Capital) ↑ (Cr)."},
+  {text:"Interest charged on Drawings ₹300.", amt:300,
+   pool:[["Drawings","X","dr"],["Interest on Drawings","R","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Drawings"], credit:["Interest on Drawings"]},
+   delta:{A:0,L:0,C:0}, why:"Drawings ↑ (Dr). Business income ↑ (Cr)."},
+  {text:"Rent received in advance ₹4,000.", amt:4000,
+   pool:[["Cash","A","dr"],["Unearned Rent","L","cr"],["Rent Received","R"],["Capital","Q"]],
+   right:{debit:["Cash"], credit:["Unearned Rent"]},
+   delta:{A:+4000,L:+4000,C:0}, why:"Cash ↑ (Dr). Liability for unearned income ↑ (Cr)."},
+  {text:"Accrued Commission (earned but not received) ₹1,200.", amt:1200,
+   pool:[["Accrued Commission","A","dr"],["Commission Received","R","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Accrued Commission"], credit:["Commission Received"]},
+   delta:{A:+1200,L:0,C:+1200}, why:"Asset (Accrued Income) ↑ (Dr). Revenue ↑ (Cr)."},
+  {text:"Purchased a computer for office use ₹25,000 by cheque.", amt:25000,
+   pool:[["Computer","A","dr"],["Bank","A","cr"],["Purchases","E"],["Cash","A"]],
+   right:{debit:["Computer"], credit:["Bank"]},
+   delta:{A:0,L:0,C:0}, why:"Asset (Computer) ↑ (Dr). Asset (Bank) ↓ (Cr)."},
+  {text:"Sold old newspapers for ₹100 cash.", amt:100,
+   pool:[["Cash","A","dr"],["Miscellaneous Income","R","cr"],["Sales","R"],["Capital","Q"]],
+   right:{debit:["Cash"], credit:["Miscellaneous Income"]},
+   delta:{A:+100,L:0,C:+100}, why:"Cash ↑ (Dr). Minor Revenue ↑ (Cr)."},
+  {text:"Paid carriage inward on purchase of goods ₹500.", amt:500,
+   pool:[["Carriage Inwards","E","dr"],["Cash","A","cr"],["Purchases","E"],["Bank","A"]],
+   right:{debit:["Carriage Inwards"], credit:["Cash"]},
+   delta:{A:-500,L:0,C:-500}, why:"Direct expense ↑ (Dr). Cash ↓ (Cr)."},
+  {text:"Recovered bad debts previously written off ₹800.", amt:800,
+   pool:[["Cash","A","dr"],["Bad Debts Recovered","R","cr"],["Debtors","A"],["Capital","Q"]],
+   right:{debit:["Cash"], credit:["Bad Debts Recovered"]},
+   delta:{A:+800,L:0,C:+800}, why:"Cash ↑ (Dr). Gain/Revenue ↑ (Cr)."},
+  {text:"Purchased stationery for office use ₹400 in cash.", amt:400,
+   pool:[["Stationery","E","dr"],["Cash","A","cr"],["Purchases","E"],["Capital","Q"]],
+   right:{debit:["Stationery"], credit:["Cash"]},
+   delta:{A:-400,L:0,C:-400}, why:"Expense ↑ (Dr). Cash ↓ (Cr)."},
+  {text:"Paid repairs for existing machinery ₹1,000.", amt:1000,
+   pool:[["Repairs","E","dr"],["Cash","A","cr"],["Machinery","A"],["Capital","Q"]],
+   right:{debit:["Repairs"], credit:["Cash"]},
+   delta:{A:-1000,L:0,C:-1000}, why:"Revenue expenditure (Expense) ↑ (Dr). Cash ↓ (Cr)."},
+  {text:"Owner brought additional capital ₹20,000 by cheque.", amt:20000,
+   pool:[["Bank","A","dr"],["Capital","Q","cr"],["Cash","A"],["Sales","R"]],
+   right:{debit:["Bank"], credit:["Capital"]},
+   delta:{A:+20000,L:0,C:+20000}, why:"Bank ↑ (Dr). Capital ↑ (Cr)."},
+  {text:"Withdrew goods for personal use costing ₹1,500.", amt:1500,
+   pool:[["Drawings","X","dr"],["Purchases","E","cr"],["Sales","R"],["Cash","A"]],
+   right:{debit:["Drawings"], credit:["Purchases"]},
+   delta:{A:0,L:0,C:0}, why:"Drawings ↑ (Dr). Goods leave without sale → Purchases ↓ (Cr)."},
+  {text:"Paid wages for installation of new machinery ₹1,500.", amt:1500,
+   pool:[["Machinery","A","dr"],["Cash","A","cr"],["Wages","E"],["Capital","Q"]],
+   right:{debit:["Machinery"], credit:["Cash"]},
+   delta:{A:0,L:0,C:0}, why:"Installation wages are capitalized to Machinery (Asset ↑). Cash ↓."},
+  {text:"Advance received from a customer ₹5,000.", amt:5000,
+   pool:[["Cash","A","dr"],["Advance from Customer","L","cr"],["Sales","R"],["Capital","Q"]],
+   right:{debit:["Cash"], credit:["Advance from Customer"]},
+   delta:{A:+5000,L:+5000,C:0}, why:"Cash ↑ (Dr). Advance is a Liability ↑ (Cr)."},
+  {text:"Provided Depreciation on Furniture ₹500.", amt:500,
+   pool:[["Depreciation","E","dr"],["Furniture","A","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Depreciation"], credit:["Furniture"]},
+   delta:{A:-500,L:0,C:-500}, why:"Expense ↑ (Dr). Value of Asset ↓ (Cr)."},
+  {text:"Goods given to employees as staff welfare ₹800.", amt:800,
+   pool:[["Staff Welfare Exp","E","dr"],["Purchases","E","cr"],["Cash","A"],["Sales","R"]],
+   right:{debit:["Staff Welfare Exp"], credit:["Purchases"]},
+   delta:{A:0,L:0,C:0}, why:"Welfare Expense ↑ (Dr). Goods leave without sale → Purchases ↓ (Cr)."},
+  {text:"Owner's income tax refund deposited into business bank ₹2,000.", amt:2000,
+   pool:[["Bank","A","dr"],["Capital","Q","cr"],["Tax Expense","E"],["Cash","A"]],
+   right:{debit:["Bank"], credit:["Capital"]},
+   delta:{A:+2000,L:0,C:+2000}, why:"Bank ↑ (Dr). Personal money into business is Additional Capital ↑ (Cr)."},
+  {text:"Paid life insurance premium of the owner by cheque ₹1,200.", amt:1200,
+   pool:[["Drawings","X","dr"],["Bank","A","cr"],["Insurance","E"],["Capital","Q"]],
+   right:{debit:["Drawings"], credit:["Bank"]},
+   delta:{A:-1200,L:0,C:-1200}, why:"Personal insurance is Drawings (Dr). Bank ↓ (Cr)."},
+  {text:"Interest accrued on investments but not received ₹600.", amt:600,
+   pool:[["Accrued Interest","A","dr"],["Interest Received","R","cr"],["Cash","A"],["Bank","A"]],
+   right:{debit:["Accrued Interest"], credit:["Interest Received"]},
+   delta:{A:+600,L:0,C:+600}, why:"Asset (Accrued Income) ↑ (Dr). Revenue ↑ (Cr)."},
+  {text:"Commission received in advance ₹900.", amt:900,
+   pool:[["Cash","A","dr"],["Unearned Commission","L","cr"],["Commission","R"],["Capital","Q"]],
+   right:{debit:["Cash"], credit:["Unearned Commission"]},
+   delta:{A:+900,L:+900,C:0}, why:"Cash ↑ (Dr). Liability (Unearned Income) ↑ (Cr)."},
+  {text:"Salary paid in advance to employee ₹1,000.", amt:1000,
+   pool:[["Prepaid Salary","A","dr"],["Cash","A","cr"],["Salary","E"],["Capital","Q"]],
+   right:{debit:["Prepaid Salary"], credit:["Cash"]},
+   delta:{A:0,L:0,C:0}, why:"Prepaid Salary is an Asset ↑ (Dr). Cash ↓ (Cr)."},
+  {text:"Repayment of Bank Loan ₹10,000 by cheque.", amt:10000,
+   pool:[["Bank Loan","L","dr"],["Bank","A","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Bank Loan"], credit:["Bank"]},
+   delta:{A:-10000,L:-10000,C:0}, why:"Liability ↓ (Dr). Bank ↓ (Cr)."},
+  {text:"Cash stolen by an employee ₹400.", amt:400,
+   pool:[["Loss by Theft","E","dr"],["Cash","A","cr"],["Purchases","E"],["Capital","Q"]],
+   right:{debit:["Loss by Theft"], credit:["Cash"]},
+   delta:{A:-400,L:0,C:-400}, why:"Abnormal loss ↑ (Dr). Cash ↓ (Cr)."},
+  {text:"Issued a cheque to a creditor for ₹4,800 in full settlement of ₹5,000.", amt:5000,
+   pool:[["Creditors","L","dr"],["Bank","A","cr"],["Discount Received","R","cr"],["Cash","A"]],
+   right:{debit:["Creditors"], credit:["Bank","Discount Received"]},
+   delta:{A:-4800,L:-5000,C:+200}, why:"Liability ↓ (Dr). Bank ↓ (Cr) + Discount (Income) ↑ (Cr)."},
+  {text:"Received a cheque from debtor ₹3,800 in full settlement of ₹4,000.", amt:4000,
+   pool:[["Bank","A","dr"],["Discount Allowed","E","dr"],["Debtors","A","cr"],["Cash","A"]],
+   right:{debit:["Bank","Discount Allowed"], credit:["Debtors"]},
+   delta:{A:-200,L:0,C:-200}, why:"Bank ↑ and Discount Expense ↑ (Dr). Debtors ↓ (Cr)."},
+  {text:"Rent paid by cheque ₹2,000.", amt:2000,
+   pool:[["Rent","E","dr"],["Bank","A","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Rent"], credit:["Bank"]},
+   delta:{A:-2000,L:0,C:-2000}, why:"Expense ↑ (Dr). Bank ↓ (Cr)."},
+  {text:"Purchased stationery for ₹300 by cash.", amt:300,
+   pool:[["Stationery","E","dr"],["Cash","A","cr"],["Purchases","E"],["Capital","Q"]],
+   right:{debit:["Stationery"], credit:["Cash"]},
+   delta:{A:-300,L:0,C:-300}, why:"Expense ↑ (Dr). Cash ↓ (Cr)."},
+  {text:"Sold goods costing ₹1,500 at ₹2,000 for cash.", amt:2000,
+   pool:[["Cash","A","dr"],["Sales","R","cr"],["Purchases","E"],["Capital","Q"]],
+   right:{debit:["Cash"], credit:["Sales"]},
+   delta:{A:+2000,L:0,C:+2000}, why:"Cash ↑ (Dr). Sales Revenue ↑ (Cr). Cost/profit handled implicitly."},
+  {text:"Bought investments (Shares) for ₹5,000 by cheque.", amt:5000,
+   pool:[["Investments","A","dr"],["Bank","A","cr"],["Cash","A"],["Purchases","E"]],
+   right:{debit:["Investments"], credit:["Bank"]},
+   delta:{A:0,L:0,C:0}, why:"Asset ↑ (Dr). Asset ↓ (Cr)."},
+  {text:"Dividend received on investments ₹400.", amt:400,
+   pool:[["Bank","A","dr"],["Dividend Received","R","cr"],["Cash","A"],["Investments","A"]],
+   right:{debit:["Bank"], credit:["Dividend Received"]},
+   delta:{A:+400,L:0,C:+400}, why:"Asset ↑ (Dr). Revenue ↑ (Cr)."},
+  {text:"Bank reversed a charge of ₹50 wrongly debited earlier.", amt:50,
+   pool:[["Bank","A","dr"],["Bank Charges","E","cr"],["Cash","A"],["Capital","Q"]],
+   right:{debit:["Bank"], credit:["Bank Charges"]},
+   delta:{A:+50,L:0,C:+50}, why:"Bank ↑ (Dr). Reversal of Expense ↓ (Cr)."}
+];
+let m2i=0;
+function m2Load(i){
+  const sc = M2_SCENES[i % M2_SCENES.length];
+  $("#m2Scene").innerHTML = "Scenario: <b>"+sc.text+"</b>";
+  const pool = $("#m2Pool"); pool.innerHTML="";
+  sc.pool.forEach(([name,type])=>{
+    const c = document.createElement("div");
+    c.className="chip"; c.dataset.type=type; c.dataset.name=name;
+    if (typeof _typeDesc === "function") c.dataset.tooltip = _typeDesc(type);
+    c.textContent=name;
+    makeDraggable(c, bucket=>{ bucket.querySelector(".dz-chips").appendChild(c); m2Update(); });
+    pool.appendChild(c);
+  });
+  $$("#m2 .bucket .dz-chips").forEach(z=>z.innerHTML="");
+  $("#m2A").textContent="₹0"; $("#m2L").textContent="₹0"; $("#m2C").textContent="₹0";
+  $("#m2Bar").style.background="rgba(255,255,255,.1)";
+  $("#m2Status").textContent="Drop accounts to see impact";
+  $("#m2Status").className="balance-status";
+}
+function m2Update(){
+  const sc = M2_SCENES[m2i % M2_SCENES.length];
+  const dr = $$("[data-side='debit'] .chip", $("#m2")).map(c=>c.dataset.name);
+  const cr = $$("[data-side='credit'] .chip", $("#m2")).map(c=>c.dataset.name);
+  if(!dr.length && !cr.length){return;}
+  const set = (k,v)=>{ const el=$("#m2"+k); el.textContent=(v>0?"+":"")+fmt(v); el.className="v "+(v>0?"up":(v<0?"down":"")); };
+  // simulated delta based on whether each side matches expected
+  let d = {A:0,L:0,C:0};
+  const matchD = JSON.stringify(dr.sort())===JSON.stringify([...sc.right.debit].sort());
+  const matchC = JSON.stringify(cr.sort())===JSON.stringify([...sc.right.credit].sort());
+  if(matchD && matchC){ d=sc.delta; }
+  set("A",d.A);set("L",d.L);set("C",d.C);
+  const ok = matchD && matchC;
+  $("#m2Bar").style.background = ok? "var(--grad-2)" : "linear-gradient(90deg,#ff5577,#ffb547)";
+  $("#m2Status").textContent = ok? "PERFECT ✓  "+sc.why : "Keep adjusting… Dr and Cr must match the scenario.";
+  $("#m2Status").className="balance-status"+(ok?"":" bad");
+}
+$("#m2Next").onclick=()=>{m2i++; m2Load(m2i); sfx.tap()};
+$("#m2Check").onclick=()=>{
+  const sc=M2_SCENES[m2i % M2_SCENES.length];
+  const dr=$$("[data-side='debit'] .chip", $("#m2")).map(c=>c.dataset.name);
+  const cr=$$("[data-side='credit'] .chip", $("#m2")).map(c=>c.dataset.name);
+  const ok = JSON.stringify(dr.sort())===JSON.stringify([...sc.right.debit].sort()) &&
+             JSON.stringify(cr.sort())===JSON.stringify([...sc.right.credit].sort());
+  if(ok){ confetti(80); sfx.good(); bumpCombo(); awardXP(15,"Lab solved"); }
+  else{ sfx.bad(); resetCombo(); toast("Not quite — read the rule again","bad"); }
+};
+m2Load(0);
+
+/* ============ MODULE 3: ALERE WHEEL ============ */
+const ALERE = [
+  {k:"A", title:"Assets", def:"Resources <b>owned/controlled</b> by the business that bring future economic benefit.",
+   inc:"DEBIT (Dr.)", dec:"CREDIT (Cr.)",
+   examples:["Cash, Bank, Stock (Inventory), Debtors, Bills Receivable","Furniture, Machinery, Building, Land, Vehicles","Prepaid Rent, Accrued Income, Investments"],
+   rule:"Golden Rule (Real A/c): Debit what comes IN, Credit what goes OUT.",
+   meme:"“Assets coming IN? Debit. Going OUT? Credit. Cash loves the LEFT side.”"},
+  {k:"L", title:"Liabilities", def:"Obligations the business <b>owes</b> to outsiders — to be settled in cash, goods or service.",
+   inc:"CREDIT (Cr.)", dec:"DEBIT (Dr.)",
+   examples:["Creditors, Bills Payable, Bank Overdraft","Bank Loan, Debentures, Mortgage","Outstanding Salary/Rent, Income Received in Advance"],
+   rule:"Golden Rule (Personal A/c): Debit the receiver, Credit the giver.",
+   meme:"“Loans live on the RIGHT — credit them when they grow, debit when you pay back.”"},
+  {k:"E", title:"Expenses", def:"Costs <b>consumed</b> to earn revenue during a period — they shrink owner's capital.",
+   inc:"DEBIT (Dr.)", dec:"CREDIT (Cr.)",
+   examples:["Salary, Rent, Wages, Electricity, Insurance","Carriage Inwards, Discount Allowed, Depreciation","Bad Debts, Repairs, Printing & Stationery"],
+   rule:"Golden Rule (Nominal A/c): Debit all expenses & losses.",
+   meme:"“Expenses EAT from the LEFT. Always. (Dr. side reduces profit.)”"},
+  {k:"R", title:"Revenue", def:"Income <b>earned</b> by selling goods/services or from other sources — it inflates capital.",
+   inc:"CREDIT (Cr.)", dec:"DEBIT (Dr.)",
+   examples:["Sales, Fees Earned, Service Revenue","Commission Received, Interest Received, Rent Received","Discount Received, Dividend Received"],
+   rule:"Golden Rule (Nominal A/c): Credit all incomes & gains.",
+   meme:"“Revenue RESTS on the RIGHT. Cr. side fattens capital.”"},
+  {k:"E", title:"Equity (Capital)", def:"Owner's residual claim: <b>Capital = Assets − Liabilities</b>. Increased by profit & fresh capital; decreased by losses & drawings.",
+   inc:"CREDIT (Cr.)", dec:"DEBIT (Dr.)",
+   examples:["Capital A/c (opening + additions)","Profit for the year (adds to capital)","Drawings (reduces capital — Dr. balance)"],
+   rule:"Capital A/c always has a CREDIT balance; Drawings always has a DEBIT balance.",
+   meme:"“Owners cheer from the RIGHT. Drawings sneak to the LEFT.”"},
+];
+let wheelAngle=0, wheelIdx=0;
+function setALERE(i){
+  const a=ALERE[i];
+  $("#aTitle").textContent=a.title;
+  $("#aDef").innerHTML=a.def;
+  $("#aInc").textContent=a.inc;
+  $("#aDec").textContent=a.dec;
+  $("#aMeme").textContent=a.meme;
+  $("#aExamples").innerHTML = "<b style='color:var(--ink)'>Examples:</b><ul style='margin:4px 0 0 18px;padding:0'>"+a.examples.map(e=>"<li>"+e+"</li>").join("")+"</ul>";
+  $("#aRule").textContent = "📜 "+a.rule;
+  $("#hub").innerHTML = a.k + "<small>"+a.title.toUpperCase()+"</small>";
+}
+setALERE(0);
+$("#spin").onclick=()=>{
+  const turns = 3 + Math.floor(Math.random()*3);
+  wheelIdx = (wheelIdx + 1 + Math.floor(Math.random()*4)) % 5;
+  // pointer at top; each slice = 72deg starting at -90.
+  const targetAngle = turns*360 + (360 - wheelIdx*72) - 36; // center of slice under pointer
+  wheelAngle = targetAngle;
+  $("#wheel").style.transform = `rotate(${wheelAngle}deg)`;
+  sfx.pop();
+  setTimeout(()=>{ setALERE(wheelIdx); sfx.good(); awardXP(5,"ALERE learned"); }, 1100);
+};
+$("#wheel").onclick=()=>$("#spin").click();
+
+/* ============ MODULE 4: DRAG-DROP LAB ============ */
+const JB = [
+  {scene:"Owner started business with cash ₹1,00,000.",
+   pool:["Cash","Capital","Bank Loan","Rent","Sales"],
+   answer:{debit:["Cash"], credit:["Capital"], amt:100000},
+   why:"Cash (Asset) increases → Debit. Capital (Equity) increases → Credit."},
+  {scene:"Purchased goods worth ₹20,000 on credit from Ramesh.",
+   pool:["Purchases","Creditors","Cash","Sales","Capital"],
+   answer:{debit:["Purchases"], credit:["Creditors"], amt:20000},
+   why:"Purchases (Expense) up → Debit. Creditors (Liability) up → Credit."},
+  {scene:"Sold goods for cash ₹12,000.",
+   pool:["Cash","Sales","Purchases","Rent","Capital"],
+   answer:{debit:["Cash"], credit:["Sales"], amt:12000},
+   why:"Cash up → Debit. Revenue up → Credit."},
+  {scene:"Paid salary ₹5,000 in cash.",
+   pool:["Salary","Cash","Capital","Sales","Bank Loan"],
+   answer:{debit:["Salary"], credit:["Cash"], amt:5000},
+   why:"Salary (Expense) up → Debit. Cash down → Credit."},
+  {scene:"Withdrew ₹3,000 for personal use (Drawings).",
+   pool:["Drawings","Cash","Sales","Capital","Rent"],
+   answer:{debit:["Drawings"], credit:["Cash"], amt:3000},
+   why:"Drawings reduce Capital → Debit. Cash down → Credit."},
+  {scene:"Received ₹6,000 from Mohan (debtor) by cheque deposited into bank.",
+   pool:["Bank","Mohan (Debtor)","Cash","Sales","Capital"],
+   answer:{debit:["Bank"], credit:["Mohan (Debtor)"], amt:6000},
+   why:"Bank (Asset) ↑ → Debit. Debtor (Asset) ↓ → Credit."},
+  {scene:"Took loan ₹50,000 from State Bank — credited to bank account.",
+   pool:["Bank","Bank Loan","Cash","Capital","Sales"],
+   answer:{debit:["Bank"], credit:["Bank Loan"], amt:50000},
+   why:"Bank (Asset) ↑ → Debit. Loan (Liability) ↑ → Credit."},
+  {scene:"Paid ₹4,000 to creditor Ramesh in cash.",
+   pool:["Creditors","Cash","Bank","Sales","Capital"],
+   answer:{debit:["Creditors"], credit:["Cash"], amt:4000},
+   why:"Creditors (Liability) ↓ → Debit. Cash ↓ → Credit."},
+  {scene:"Sold goods on credit to Mohan ₹9,000.",
+   pool:["Debtors","Sales","Cash","Capital","Bank"],
+   answer:{debit:["Debtors"], credit:["Sales"], amt:9000},
+   why:"Debtors (Asset) ↑ → Debit. Sales (Revenue) ↑ → Credit."},
+  {scene:"Deposited ₹15,000 cash into bank.",
+   pool:["Bank","Cash","Capital","Sales","Creditors"],
+   answer:{debit:["Bank"], credit:["Cash"], amt:15000},
+   why:"Contra entry: Bank ↑ → Debit. Cash ↓ → Credit."},
+  {scene:"Withdrew ₹3,000 from bank for office use.",
+   pool:["Cash","Bank","Capital","Drawings","Sales"],
+   answer:{debit:["Cash"], credit:["Bank"], amt:3000},
+   why:"Cash ↑ → Debit. Bank ↓ → Credit."},
+  {scene:"Paid electricity bill ₹800 in cash.",
+   pool:["Electricity","Cash","Bank","Sales","Capital"],
+   answer:{debit:["Electricity"], credit:["Cash"], amt:800},
+   why:"Electricity (Expense) ↑ → Debit. Cash ↓ → Credit."},
+  {scene:"Received commission ₹1,200 in cash.",
+   pool:["Cash","Commission Received","Sales","Capital","Bank"],
+   answer:{debit:["Cash"], credit:["Commission Received"], amt:1200},
+   why:"Cash ↑ → Debit. Income ↑ → Credit."},
+  {scene:"Bought furniture ₹10,000 by cheque.",
+   pool:["Furniture","Bank","Cash","Capital","Sales"],
+   answer:{debit:["Furniture"], credit:["Bank"], amt:10000},
+   why:"Furniture (Asset) ↑ → Debit. Bank (Asset) ↓ → Credit."},
+  {scene:"Goods returned to creditor (Purchase Return) ₹1,500.",
+   pool:["Creditors","Purchase Returns","Cash","Sales","Purchases"],
+   answer:{debit:["Creditors"], credit:["Purchase Returns"], amt:1500},
+   why:"Liability ↓ → Debit. Purchase Returns reduce cost → Credit."},
+  {scene:"Mohan returned goods to us (Sales Return) ₹600.",
+   pool:["Sales Returns","Debtors","Cash","Capital","Sales"],
+   answer:{debit:["Sales Returns"], credit:["Debtors"], amt:600},
+   why:"Sales Returns (contra revenue) ↑ → Debit. Debtors ↓ → Credit."},
+  {scene:"Paid wages ₹2,200 in cash.",
+   pool:["Wages","Cash","Bank","Capital","Sales"],
+   answer:{debit:["Wages"], credit:["Cash"], amt:2200},
+   why:"Wages (Expense) ↑ → Debit. Cash ↓ → Credit."},
+  {scene:"Charged depreciation on machinery ₹1,500.",
+   pool:["Depreciation","Machinery","Cash","Capital","Sales"],
+   answer:{debit:["Depreciation"], credit:["Machinery"], amt:1500},
+   why:"Depreciation (Expense) ↑ → Debit. Machinery (Asset) ↓ → Credit. No cash."},
+  {scene:"Bad debts written off ₹500 (Mohan insolvent).",
+   pool:["Bad Debts","Debtors","Cash","Sales","Capital"],
+   answer:{debit:["Bad Debts"], credit:["Debtors"], amt:500},
+   why:"Loss (Expense) ↑ → Debit. Debtor ↓ → Credit."},
+  {scene:"Paid insurance premium ₹2,400 by cash.",
+   pool:["Insurance","Cash","Bank","Sales","Capital"],
+   answer:{debit:["Insurance"], credit:["Cash"], amt:2400},
+   why:"Insurance (Expense) ↑ → Debit. Cash ↓ → Credit."},
+  {scene:"Salary ₹3,000 unpaid at year end (outstanding).",
+   pool:["Salary","Outstanding Salary","Cash","Capital","Bank"],
+   answer:{debit:["Salary"], credit:["Outstanding Salary"], amt:3000},
+   why:"Expense ↑ → Debit. Liability (Outstanding Salary) ↑ → Credit."},
+  {scene:"Paid rent ₹6,000 in advance for next 6 months.",
+   pool:["Prepaid Rent","Cash","Rent","Capital","Bank"],
+   answer:{debit:["Prepaid Rent"], credit:["Cash"], amt:6000},
+   why:"Prepaid Rent (Asset) ↑ → Debit. Cash ↓ → Credit."},
+  {scene:"Issued Bill Payable to creditor for ₹4,000.",
+   pool:["Creditors","Bills Payable","Cash","Sales","Bank"],
+   answer:{debit:["Creditors"], credit:["Bills Payable"], amt:4000},
+   why:"Liability ↓ → Debit. New Liability (Bills Payable) ↑ → Credit."},
+  {scene:"Received Bill Receivable from Mohan ₹3,500.",
+   pool:["Bills Receivable","Debtors","Cash","Sales","Capital"],
+   answer:{debit:["Bills Receivable"], credit:["Debtors"], amt:3500},
+   why:"Asset ↑ → Debit. Debtors (Asset) ↓ → Credit. Asset swap."},
+  {scene:"Carriage paid on goods purchased ₹400 in cash.",
+   pool:["Carriage Inwards","Cash","Bank","Sales","Capital"],
+   answer:{debit:["Carriage Inwards"], credit:["Cash"], amt:400},
+   why:"Carriage Inwards (direct Expense) ↑ → Debit. Cash ↓ → Credit."},
+  {scene:"Received interest ₹700 by cheque.",
+   pool:["Bank","Interest Received","Cash","Capital","Sales"],
+   answer:{debit:["Bank"], credit:["Interest Received"], amt:700},
+   why:"Bank ↑ → Debit. Income ↑ → Credit."},
+  {scene:"Received discount ₹200 from creditor on payment.",
+   pool:["Creditors","Discount Received","Cash","Bank","Sales"],
+   answer:{debit:["Creditors"], credit:["Discount Received"], amt:200},
+   why:"Liability ↓ → Debit. Discount Received (Income) ↑ → Credit."},
+  {scene:"Sold old furniture for ₹2,500 cash (book value ₹2,500).",
+   pool:["Cash","Furniture","Sales","Capital","Bank"],
+   answer:{debit:["Cash"], credit:["Furniture"], amt:2500},
+   why:"Cash ↑ → Debit. Furniture (Asset) ↓ → Credit."},
+  {scene:"Owner brought additional capital of ₹25,000 by cheque.",
+   pool:["Bank","Capital","Cash","Drawings","Sales"],
+   answer:{debit:["Bank"], credit:["Capital"], amt:25000},
+   why:"Bank (Asset) ↑ → Debit. Capital (Equity) ↑ → Credit."},
+  {scene:"Owner paid Life Insurance Premium from business cash ₹2,000.",
+   pool:["Drawings","Cash","Insurance","Capital","Bank"],
+   answer:{debit:["Drawings"], credit:["Cash"], amt:2000},
+   why:"Personal expense is treated as Drawings (Dr). Cash decreases (Cr)."},
+  {scene:"Paid Income Tax from business bank account ₹5,000.",
+   pool:["Drawings","Bank","Tax Expense","Capital","Cash"],
+   answer:{debit:["Drawings"], credit:["Bank"], amt:5000},
+   why:"Proprietor's income tax is a personal expense (Drawings Dr). Bank decreases (Cr)."},
+  {scene:"Goods costing ₹1,000 distributed as free samples.",
+   pool:["Advertisement","Purchases","Sales","Cash","Capital"],
+   answer:{debit:["Advertisement"], credit:["Purchases"], amt:1000},
+   why:"Advertisement expense ↑ (Dr). Goods leave without sale → Purchases ↓ (Cr)."},
+  {scene:"Goods costing ₹500 given away as charity.",
+   pool:["Charity","Purchases","Sales","Cash","Bank"],
+   answer:{debit:["Charity"], credit:["Purchases"], amt:500},
+   why:"Charity expense ↑ (Dr). Stock reduced at cost price → Purchases ↓ (Cr)."},
+  {scene:"Goods worth ₹2,000 destroyed by fire (uninsured).",
+   pool:["Loss by Fire","Purchases","Sales","Cash","Capital"],
+   answer:{debit:["Loss by Fire"], credit:["Purchases"], amt:2000},
+   why:"Abnormal loss ↑ (Dr). Stock reduced → Purchases ↓ (Cr)."},
+  {scene:"Paid installation charges on new machinery ₹3,000.",
+   pool:["Machinery","Cash","Wages","Repairs","Bank"],
+   answer:{debit:["Machinery"], credit:["Cash"], amt:3000},
+   why:"Capital expenditure: added to Asset value (Dr). Cash ↓ (Cr)."},
+  {scene:"Bank charged ₹200 for services.",
+   pool:["Bank Charges","Bank","Cash","Capital","Interest"],
+   answer:{debit:["Bank Charges"], credit:["Bank"], amt:200},
+   why:"Expense ↑ (Dr). Bank balance ↓ (Cr)."},
+  {scene:"Interest allowed by bank ₹150.",
+   pool:["Bank","Interest Received","Cash","Capital","Sales"],
+   answer:{debit:["Bank"], credit:["Interest Received"], amt:150},
+   why:"Bank balance ↑ (Dr). Income/Revenue ↑ (Cr)."},
+  {scene:"Interest on Capital provided at 10% on ₹50,000 (₹5,000).",
+   pool:["Interest on Capital","Capital","Cash","Interest Received","Bank"],
+   answer:{debit:["Interest on Capital"], credit:["Capital"], amt:5000},
+   why:"Business expense ↑ (Dr). Owner's Capital ↑ (Cr)."},
+  {scene:"Interest charged on Drawings ₹300.",
+   pool:["Drawings","Interest on Drawings","Cash","Capital","Sales"],
+   answer:{debit:["Drawings"], credit:["Interest on Drawings"], amt:300},
+   why:"Drawings ↑ (Dr). Business income ↑ (Cr)."},
+  {scene:"Rent received in advance ₹4,000.",
+   pool:["Cash","Unearned Rent","Rent Received","Capital","Bank"],
+   answer:{debit:["Cash"], credit:["Unearned Rent"], amt:4000},
+   why:"Cash ↑ (Dr). Liability for unearned income ↑ (Cr)."},
+  {scene:"Accrued Commission (earned but not received) ₹1,200.",
+   pool:["Accrued Commission","Commission Received","Cash","Capital","Bank"],
+   answer:{debit:["Accrued Commission"], credit:["Commission Received"], amt:1200},
+   why:"Asset (Accrued Income) ↑ (Dr). Revenue ↑ (Cr)."},
+  {scene:"Purchased a computer for office use ₹25,000 by cheque.",
+   pool:["Computer","Bank","Purchases","Cash","Capital"],
+   answer:{debit:["Computer"], credit:["Bank"], amt:25000},
+   why:"Asset (Computer) ↑ (Dr). Asset (Bank) ↓ (Cr)."},
+  {scene:"Sold old newspapers for ₹100 cash.",
+   pool:["Cash","Miscellaneous Income","Sales","Capital","Bank"],
+   answer:{debit:["Cash"], credit:["Miscellaneous Income"], amt:100},
+   why:"Cash ↑ (Dr). Minor Revenue ↑ (Cr)."},
+  {scene:"Paid carriage inward on purchase of goods ₹500.",
+   pool:["Carriage Inwards","Cash","Purchases","Bank","Capital"],
+   answer:{debit:["Carriage Inwards"], credit:["Cash"], amt:500},
+   why:"Direct expense ↑ (Dr). Cash ↓ (Cr)."},
+  {scene:"Recovered bad debts previously written off ₹800.",
+   pool:["Cash","Bad Debts Recovered","Debtors","Capital","Sales"],
+   answer:{debit:["Cash"], credit:["Bad Debts Recovered"], amt:800},
+   why:"Cash ↑ (Dr). Gain/Revenue ↑ (Cr)."},
+  {scene:"Purchased stationery for office use ₹400 in cash.",
+   pool:["Stationery","Cash","Purchases","Capital","Bank"],
+   answer:{debit:["Stationery"], credit:["Cash"], amt:400},
+   why:"Expense ↑ (Dr). Cash ↓ (Cr)."},
+  {scene:"Paid repairs for existing machinery ₹1,000.",
+   pool:["Repairs","Cash","Machinery","Capital","Bank"],
+   answer:{debit:["Repairs"], credit:["Cash"], amt:1000},
+   why:"Revenue expenditure (Expense) ↑ (Dr). Cash ↓ (Cr)."},
+  {scene:"Owner brought additional capital ₹20,000 by cheque.",
+   pool:["Bank","Capital","Cash","Sales","Drawings"],
+   answer:{debit:["Bank"], credit:["Capital"], amt:20000},
+   why:"Bank ↑ (Dr). Capital ↑ (Cr)."},
+  {scene:"Withdrew goods for personal use costing ₹1,500.",
+   pool:["Drawings","Purchases","Sales","Cash","Capital"],
+   answer:{debit:["Drawings"], credit:["Purchases"], amt:1500},
+   why:"Drawings ↑ (Dr). Goods leave without sale → Purchases ↓ (Cr)."}
+];
+let jbi=0;
+function _eng(){ return window.AcctEngine; }
+function _typeOf(name){
+  const e=_eng(); if(e) return e.classify(name);
+  // fallback simple map
+  return ({Cash:"A",Bank:"A",Capital:"Q",Sales:"R",Purchases:"E",Rent:"E",Salary:"E",Drawings:"X","Bank Loan":"L",Creditors:"L"}[name])||"A";
+}
+function _typeTag(t){ return {A:"ASSET",L:"LIAB",Q:"CAP",E:"EXP",R:"REV",X:"DRAW"}[t]||"?"; }
+function _typeDesc(t){ return {
+  A:"Asset: Resources owned/controlled.\nDr to increase, Cr to decrease.",
+  L:"Liability: Obligations owed.\nCr to increase, Dr to decrease.",
+  Q:"Equity/Capital: Owner's claim.\nCr to increase, Dr to decrease.",
+  E:"Expense: Costs consumed.\nDr to increase, Cr to decrease.",
+  R:"Revenue: Income earned.\nCr to increase, Dr to decrease.",
+  X:"Contra-Equity (Drawings).\nDr to increase (reduces Capital)."
+}[t]||""; }
+function jbLoad(i){
+  const q=JB[i%JB.length];
+  $("#jbScene").innerHTML="<b>Q.</b> "+q.scene;
+  const pool=$("#jbPool"); pool.innerHTML="";
+  q.pool.forEach(name=>{
+    const t=_typeOf(name);
+    const c=document.createElement("div");
+    c.className="chip"; c.dataset.name=name; c.dataset.type=t;
+    c.dataset.tooltip = _typeDesc(t);
+    c.innerHTML=`${name}<span class="tbadge">${_typeTag(t)}</span>`;
+    makeDraggable(c,bucket=>{ bucket.querySelector(".dz-chips").appendChild(c); jbImpact(); });
+    pool.appendChild(c);
+  });
+  $$("#m4 .dz .dz-chips").forEach(z=>z.innerHTML="");
+  $("#jbDr").value=""; $("#jbCr").value="";
+  $("#jbExplain").innerHTML="Drag the right accounts into Debit / Credit. Each chip shows its account family.";
+  jbImpact();
+}
+function jbImpact(){
+  const e=_eng();
+  const dr=$$("#m4 [data-side='debit'] .chip").map(c=>c.dataset.name);
+  const cr=$$("#m4 [data-side='credit'] .chip").map(c=>c.dataset.name);
+  const dAmt=+($("#jbDr").value||0), cAmt=+($("#jbCr").value||0);
+  let dA=0,dL=0,dQ=0;
+  if(e){
+    dr.forEach(n=>{ const d=e.eqDelta(e.classify(n),"dr",dAmt); dA+=d.dA; dL+=d.dL; dQ+=d.dQ; });
+    cr.forEach(n=>{ const d=e.eqDelta(e.classify(n),"cr",cAmt); dA+=d.dA; dL+=d.dL; dQ+=d.dQ; });
+  }
+  const fmtΔ=v=>(v>0?"+":"")+"₹"+fmt(Math.abs(v)).replace(/^/,v<0?"-":"");
+  $("#jbDA").textContent=fmtΔ(dA); $("#jbDA").className="v "+(dA>0?"up":dA<0?"down":"");
+  $("#jbDL").textContent=fmtΔ(dL); $("#jbDL").className="v "+(dL>0?"up":dL<0?"down":"");
+  $("#jbDQ").textContent=fmtΔ(dQ); $("#jbDQ").className="v "+(dQ>0?"up":dQ<0?"down":"");
+}
+["jbDr","jbCr"].forEach(id=>document.addEventListener("input",ev=>{ if(ev.target.id===id) jbImpact(); }));
+requestAnimationFrame(()=>jbLoad(0));
+$("#jbNext").onclick=()=>{jbi++; jbLoad(jbi); sfx.tap()};
+$("#jbHint").onclick=()=>{
+  const q=JB[jbi%JB.length];
+  const e=_eng();
+  const tip = e ? q.answer.debit.map(n=>e.explain(n,"dr")).concat(q.answer.credit.map(n=>e.explain(n,"cr"))).join("  •  ") : q.why;
+  $("#jbExplain").innerHTML="💡 "+tip;
+  sfx.pop();
+};
+$("#jbCheck").onclick=()=>{
+  const q=JB[jbi%JB.length];
+  const dr=$$("#m4 [data-side='debit'] .chip").map(c=>c.dataset.name);
+  const cr=$$("#m4 [data-side='credit'] .chip").map(c=>c.dataset.name);
+  const dAmt=+($("#jbDr").value||0), cAmt=+($("#jbCr").value||0);
+  const e=_eng();
+  // engine validation (dual aspect + equation)
+  const entry={label:q.scene, dr:dr.map(a=>({a,amt:dAmt})), cr:cr.map(a=>({a,amt:cAmt}))};
+  const v = e ? e.validate(entry) : {ok:true,errors:[],delta:{dA:0,dL:0,dQ:0}};
+  const matchAns =
+    JSON.stringify(dr.sort())===JSON.stringify([...q.answer.debit].sort()) &&
+    JSON.stringify(cr.sort())===JSON.stringify([...q.answer.credit].sort()) &&
+    dAmt===q.answer.amt && cAmt===q.answer.amt;
+  $$("#m4 .dz").forEach(d=>d.classList.remove("ok","bad"));
+  if(!v.ok){
+    sfx.bad(); resetCombo();
+    $$("#m4 .dz").forEach(d=>d.classList.add("bad"));
+    $("#jbExplain").innerHTML="⚠ <b>Engine rejected:</b> "+v.errors.join(" • ");
+    return;
+  }
+  if(matchAns){
+    confetti(140); sfx.good(); bumpCombo(); awardXP(20,"Journal entry correct");
+    $$("#m4 .dz").forEach(d=>d.classList.add("ok"));
+    $("#jbExplain").innerHTML="✅ <b>Correct & balanced!</b> "+q.why+
+      `<br/><span style="color:var(--ink-dim)">Equation impact: ΔA ${v.delta.dA>=0?"+":""}${fmt(v.delta.dA)} = ΔL ${v.delta.dL>=0?"+":""}${fmt(v.delta.dL)} + ΔC ${v.delta.dQ>=0?"+":""}${fmt(v.delta.dQ)}</span>`;
+  } else {
+    sfx.bad(); resetCombo();
+    $("#jbExplain").innerHTML="❌ Dual aspect holds but the accounts don't match the scenario. "+q.why+
+      "<br/>Expected Dr: <b>"+q.answer.debit.join(", ")+"</b> · Cr: <b>"+q.answer.credit.join(", ")+"</b> · Amount: <b>"+fmt(q.answer.amt)+"</b>";
+  }
+};
+
+/* ============ MODULE 5: GAME ============ */
+const GAME = [
+  {q:"Owner brings ₹10,000 cash as capital. Impact?",
+   o:["Assets ↑, Capital ↑","Assets ↑, Liabilities ↑","Assets ↑, Capital ↓","No change"], a:0,
+   why:"Cash (Asset) rises and Capital rises by the same amount."},
+  {q:"Bought goods on credit ₹5,000. Impact?",
+   o:["Assets ↑, Liabilities ↑","Assets ↑, Capital ↑","Assets ↓, Liabilities ↓","Capital ↓, Liabilities ↑"], a:0,
+   why:"Stock (Asset) rises and Creditors (Liability) rises."},
+  {q:"Paid creditors ₹2,000. Impact?",
+   o:["Assets ↓, Liabilities ↓","Assets ↑, Liabilities ↑","Capital ↓ only","No change"], a:0,
+   why:"Cash (Asset) falls and Creditors (Liability) falls."},
+  {q:"Cash sales ₹4,000. Impact?",
+   o:["Assets ↑, Capital ↑","Assets ↑, Liabilities ↑","Liabilities ↑, Capital ↓","Assets ↓, Capital ↓"], a:0,
+   why:"Revenue raises Capital; Cash (Asset) rises."},
+  {q:"Owner withdraws ₹1,000 (drawings). Impact?",
+   o:["Assets ↓, Capital ↓","Assets ↑, Capital ↑","Liabilities ↑, Capital ↓","No change"], a:0,
+   why:"Drawings reduce both Cash (Asset) and Capital."},
+  {q:"Bought machinery for cash ₹10,000. Impact?",
+   o:["Assets ↑ and ↓ (No net change)","Assets ↑, Capital ↑","Assets ↑, Liabilities ↑","Assets ↓, Liabilities ↓"], a:0,
+   why:"Machinery (Asset) increases, Cash (Asset) decreases. Total Assets remain unchanged."},
+  {q:"Deposited cash into bank ₹5,000. Impact?",
+   o:["Assets ↑ and ↓ (No net change)","Assets ↑, Liabilities ↑","Capital ↑, Assets ↓","Liabilities ↑, Capital ↓"], a:0,
+   why:"Bank (Asset) rises, Cash (Asset) falls. Net Assets unchanged."},
+  {q:"Paid rent in cash ₹2,000. Impact?",
+   o:["Assets ↓, Capital ↓","Assets ↓, Liabilities ↓","Liabilities ↑, Capital ↓","Assets ↑, Capital ↑"], a:0,
+   why:"Rent is an expense reducing Capital, and Cash (Asset) decreases."},
+  {q:"Sold goods (cost ₹3,000) for cash ₹4,000. Impact?",
+   o:["Assets ↑ by 1,000, Capital ↑ by 1,000","Assets ↑ by 4,000, Capital ↑ by 4,000","Assets ↑ by 3,000, Liabilities ↑ by 3,000","Assets ↓ by 1,000, Capital ↓ by 1,000"], a:0,
+   why:"Cash rises by 4000, Stock falls by 3000 (Net Asset ↑ 1000). Profit of 1000 increases Capital."},
+  {q:"Received commission in cash ₹500. Impact?",
+   o:["Assets ↑, Capital ↑","Assets ↑, Liabilities ↑","Assets ↓, Capital ↓","Liabilities ↓, Capital ↑"], a:0,
+   why:"Cash (Asset) increases. Commission (Revenue) increases Capital."},
+  {q:"Owner took goods for personal use (cost ₹1,000). Impact?",
+   o:["Assets ↓, Capital ↓","Assets ↓, Liabilities ↓","Capital ↓, Liabilities ↑","Assets ↑, Capital ↑"], a:0,
+   why:"Stock (Asset) decreases. Drawings reduce Capital."},
+  {q:"Paid salary outstanding from last year ₹3,000. Impact?",
+   o:["Assets ↓, Liabilities ↓","Assets ↓, Capital ↓","Liabilities ↓, Capital ↑","Assets ↑, Liabilities ↑"], a:0,
+   why:"Cash (Asset) decreases. Outstanding Salary (Liability) decreases."},
+  {q:"Purchased goods on credit ₹8,000. Impact?",
+   o:["Assets ↑, Liabilities ↑","Assets ↑, Capital ↑","Assets ↓, Liabilities ↓","Capital ↓, Liabilities ↑"], a:0,
+   why:"Stock (Asset) increases. Creditors (Liability) increases."},
+  {q:"Borrowed from bank ₹20,000. Impact?",
+   o:["Assets ↑, Liabilities ↑","Assets ↑, Capital ↑","Liabilities ↑, Capital ↓","Assets ↓, Liabilities ↓"], a:0,
+   why:"Bank balance (Asset) increases. Bank Loan (Liability) increases."},
+  {q:"Charged depreciation on machinery ₹2,000. Impact?",
+   o:["Assets ↓, Capital ↓","Assets ↓, Liabilities ↓","Assets ↑, Capital ↑","Capital ↓, Liabilities ↑"], a:0,
+   why:"Machinery value (Asset) decreases. Expense reduces Capital."},
+  {q:"Paid income tax from business cash ₹3,000. Impact?",
+   o:["Assets ↓, Capital ↓","Assets ↓, Liabilities ↓","Capital ↓, Liabilities ↑","No change"], a:0,
+   why:"Owner's income tax is Drawings, reducing Capital. Cash (Asset) decreases."},
+  {q:"Received advance from customer ₹4,000. Impact?",
+   o:["Assets ↑, Liabilities ↑","Assets ↑, Capital ↑","Assets ↓, Liabilities ↓","Liabilities ↑, Capital ↓"], a:0,
+   why:"Cash (Asset) increases. Advance from Customer (Liability) increases."},
+  {q:"Paid rent in advance ₹2,000. Impact?",
+   o:["Assets ↑ and ↓ (No net change)","Assets ↓, Capital ↓","Assets ↓, Liabilities ↓","Assets ↑, Capital ↑"], a:0,
+   why:"Prepaid Rent (Asset) increases, Cash (Asset) decreases."},
+  {q:"Issued cheque to creditor ₹5,000. Impact?",
+   o:["Assets ↓, Liabilities ↓","Assets ↑, Liabilities ↑","Assets ↓, Capital ↓","Liabilities ↓, Capital ↑"], a:0,
+   why:"Bank (Asset) decreases. Creditors (Liability) decreases."},
+  {q:"Accrued interest on investment ₹500. Impact?",
+   o:["Assets ↑, Capital ↑","Assets ↑, Liabilities ↑","Assets ↓, Capital ↓","Liabilities ↓, Capital ↑"], a:0,
+   why:"Accrued Interest (Asset) increases. Revenue increases Capital."},
+  {q:"Unearned commission earned now ₹1,000. Impact?",
+   o:["Liabilities ↓, Capital ↑","Assets ↑, Capital ↑","Assets ↓, Liabilities ↓","Assets ↑, Liabilities ↑"], a:0,
+   why:"Liability (Unearned Income) decreases. Revenue increases Capital."},
+  {q:"Sold goods on credit ₹6,000. Impact?",
+   o:["Assets ↑, Capital ↑","Assets ↑, Liabilities ↑","Assets ↓, Capital ↓","Liabilities ↑, Capital ↓"], a:0,
+   why:"Debtors (Asset) increases. Sales (Revenue) increases Capital."},
+  {q:"Bad debts written off ₹300. Impact?",
+   o:["Assets ↓, Capital ↓","Assets ↓, Liabilities ↓","Assets ↑, Capital ↑","Capital ↓, Liabilities ↑"], a:0,
+   why:"Debtors (Asset) decreases. Loss reduces Capital."},
+  {q:"Interest on Capital provided ₹1,500. Impact?",
+   o:["No net change","Assets ↑, Capital ↑","Assets ↓, Capital ↓","Liabilities ↑, Capital ↓"], a:0,
+   why:"Expense reduces Capital, but Capital itself increases. Net effect on equation is zero."},
+  {q:"Cash stolen by employee ₹200. Impact?",
+   o:["Assets ↓, Capital ↓","Assets ↓, Liabilities ↓","Liabilities ↑, Capital ↓","No change"], a:0,
+   why:"Cash (Asset) decreases. Abnormal loss reduces Capital."}
+];
+let g={i:0,score:0};
+function gRender(){
+  if(g.i>=GAME.length){
+    $("#gMission").innerHTML = `🏆 You scored <b>${g.score}/${GAME.length}</b>. ${g.score>=4?"Master class!":"Try again for full score."}`;
+    $("#gOpts").innerHTML=""; if(g.score>=4) unlockBadge("game_master"); return;
+  }
+  const q=GAME[g.i];
+  $("#gMis").textContent=g.i+1; $("#gScore").textContent=g.score;
+  $("#gMission").textContent = "Mission "+(g.i+1)+": "+q.q;
+  $("#gOpts").innerHTML="";
+  // shuffle options once
+  const idx=q.o.map((_,k)=>k).sort(()=>Math.random()-.5);
+  idx.forEach(k=>{
+    const b=document.createElement("button"); b.textContent=q.o[k];
+    b.onclick=()=>{
+      if(k===q.a){b.classList.add("correct"); sfx.good(); g.score++; bumpCombo(); awardXP(10,"Mission cleared"); toast(q.why,"win");}
+      else {b.classList.add("wrong"); sfx.bad(); resetCombo(); toast("Hint: "+q.why,"bad");}
+      $$("#gOpts button").forEach(x=>x.disabled=true);
+      setTimeout(()=>{g.i++; gRender();}, 900);
+    };
+    $("#gOpts").appendChild(b);
+  });
+}
+$("#gRestart").onclick=()=>{g={i:0,score:0}; gRender(); sfx.tap()};
+gRender();
+
+/* ============ MODULE 6: JOURNAL BUILDER PRO ============ */
+const JBP = { dr:[], cr:[], narr:"" };
+const JBP_LIB = [
+  "Cash","Bank","Stock","Debtors","Mohan (Debtor)","Bills Receivable","Machinery","Furniture","Building","Land",
+  "Capital","Drawings",
+  "Bank Loan","Creditors","Bills Payable","Outstanding Salary",
+  "Sales","Sales Returns","Commission Received","Interest Received",
+  "Purchases","Purchase Returns","Salary","Rent","Wages","Carriage Inwards","Carriage Outwards","Discount Allowed","Discount Received","Insurance","Electricity"
+];
+const JBP_QUICK = [
+  ["Owner capital ₹50,000",[{a:"Cash",amt:50000}],[{a:"Capital",amt:50000}]],
+  ["Add capital by cheque ₹25,000",[{a:"Bank",amt:25000}],[{a:"Capital",amt:25000}]],
+  ["Bank loan ₹20,000",[{a:"Cash",amt:20000}],[{a:"Bank Loan",amt:20000}]],
+  ["Cash deposit to bank ₹10,000",[{a:"Bank",amt:10000}],[{a:"Cash",amt:10000}]],
+  ["Withdraw from bank ₹5,000",[{a:"Cash",amt:5000}],[{a:"Bank",amt:5000}]],
+  ["Cash sale ₹5,000",[{a:"Cash",amt:5000}],[{a:"Sales",amt:5000}]],
+  ["Credit sale to Mohan ₹7,000",[{a:"Debtors",amt:7000}],[{a:"Sales",amt:7000}]],
+  ["Cash purchase ₹4,000",[{a:"Purchases",amt:4000}],[{a:"Cash",amt:4000}]],
+  ["Credit purchase ₹8,000",[{a:"Purchases",amt:8000}],[{a:"Creditors",amt:8000}]],
+  ["Pay creditor ₹3,000",[{a:"Creditors",amt:3000}],[{a:"Cash",amt:3000}]],
+  ["Receive from debtor ₹6,000",[{a:"Cash",amt:6000}],[{a:"Debtors",amt:6000}]],
+  ["Purchase return ₹1,000",[{a:"Creditors",amt:1000}],[{a:"Purchase Returns",amt:1000}]],
+  ["Sales return ₹500",[{a:"Sales Returns",amt:500}],[{a:"Debtors",amt:500}]],
+  ["Pay rent ₹2,000",[{a:"Rent",amt:2000}],[{a:"Cash",amt:2000}]],
+  ["Pay salary cheque ₹5,000",[{a:"Salary",amt:5000}],[{a:"Bank",amt:5000}]],
+  ["Pay wages ₹1,800",[{a:"Wages",amt:1800}],[{a:"Cash",amt:1800}]],
+  ["Electricity ₹800",[{a:"Electricity",amt:800}],[{a:"Cash",amt:800}]],
+  ["Insurance ₹2,400",[{a:"Insurance",amt:2400}],[{a:"Cash",amt:2400}]],
+  ["Buy machinery ₹15,000",[{a:"Machinery",amt:15000}],[{a:"Cash",amt:15000}]],
+  ["Buy furniture cheque ₹10,000",[{a:"Furniture",amt:10000}],[{a:"Bank",amt:10000}]],
+  ["Commission received ₹1,500",[{a:"Cash",amt:1500}],[{a:"Commission Received",amt:1500}]],
+  ["Interest received cheque ₹600",[{a:"Bank",amt:600}],[{a:"Interest Received",amt:600}]],
+  ["Discount allowed ₹200",[{a:"Discount Allowed",amt:200}],[{a:"Debtors",amt:200}]],
+  ["Discount received ₹150",[{a:"Creditors",amt:150}],[{a:"Discount Received",amt:150}]],
+  ["Depreciation ₹1,500",[{a:"Depreciation",amt:1500}],[{a:"Machinery",amt:1500}]],
+  ["Bad debts ₹700",[{a:"Bad Debts",amt:700}],[{a:"Debtors",amt:700}]],
+  ["Outstanding salary ₹3,000",[{a:"Salary",amt:3000}],[{a:"Outstanding Salary",amt:3000}]],
+  ["Prepaid rent ₹6,000",[{a:"Prepaid Rent",amt:6000}],[{a:"Cash",amt:6000}]],
+  ["Bill payable issued ₹4,000",[{a:"Creditors",amt:4000}],[{a:"Bills Payable",amt:4000}]],
+  ["Bill receivable accepted ₹3,500",[{a:"Bills Receivable",amt:3500}],[{a:"Debtors",amt:3500}]],
+  ["Drawings ₹4,000",[{a:"Drawings",amt:4000}],[{a:"Cash",amt:4000}]],
+];
+function jbpEng(){ return window.AcctEngine; }
+function jbpTypeTag(t){ return {A:"ASSET",L:"LIAB",Q:"CAPITAL",E:"EXPENSE",R:"REVENUE",X:"DRAWINGS"}[t]||"?"; }
+function jbpAdd(side, name){
+  const list = JBP[side];
+  if(list.some(r=>r.a===name)){ toast("Already added on "+side.toUpperCase(),"bad"); sfx.bad(); return; }
+  list.push({a:name, amt:0});
+  jbpRender();
+  // focus the new amount input
+  requestAnimationFrame(()=>{
+    const inp = $(`#m6 .jbp-side[data-jbside="${side}"] .jbp-row:last-child input`);
+    if(inp) inp.focus();
+  });
+}
+function jbpRemove(side, idx){ JBP[side].splice(idx,1); jbpRender(); }
+function jbpRow(side, r, idx){
+  const e=jbpEng(); const t = e?e.classify(r.a):"A";
+  const div=document.createElement("div"); div.className="jbp-row";
+  div.innerHTML=`<div class="nm">${r.a}<span class="tt">${jbpTypeTag(t)}</span></div>
+    <input type="number" min="0" step="1" value="${r.amt||""}" placeholder="₹"/>
+    <button class="rm" title="Remove">✕</button>`;
+  div.querySelector("input").addEventListener("input",ev=>{ r.amt=+ev.target.value||0; jbpTotals(); });
+  div.querySelector(".rm").onclick=()=>{ jbpRemove(side,idx); sfx.tap(); };
+  return div;
+}
+function jbpRender(){
+  ["dr","cr"].forEach(side=>{
+    const host = $(`#m6 .jbp-side[data-jbside="${side}"] .jbp-rows`);
+    host.innerHTML="";
+    if(!JBP[side].length){
+      const em=document.createElement("div"); em.className="jbp-empty";
+      em.textContent = side==="dr"?"No debit rows yet — search & add accounts.":"No credit rows yet — search & add accounts.";
+      host.appendChild(em);
+    }
+    JBP[side].forEach((r,i)=>host.appendChild(jbpRow(side,r,i)));
+  });
+  jbpTotals();
+}
+function jbpTotals(){
+  const dT=JBP.dr.reduce((s,r)=>s+(+r.amt||0),0);
+  const cT=JBP.cr.reduce((s,r)=>s+(+r.amt||0),0);
+  $("#jbpDrT").textContent="₹"+fmt(dT);
+  $("#jbpCrT").textContent="₹"+fmt(cT);
+  const e=jbpEng();
+  let dA=0,dL=0,dQ=0;
+  if(e){
+    JBP.dr.forEach(r=>{ const d=e.eqDelta(e.classify(r.a),"dr",+r.amt||0); dA+=d.dA; dL+=d.dL; dQ+=d.dQ; });
+    JBP.cr.forEach(r=>{ const d=e.eqDelta(e.classify(r.a),"cr",+r.amt||0); dA+=d.dA; dL+=d.dL; dQ+=d.dQ; });
+  }
+  const sign=v=>(v>0?"+":v<0?"-":"")+"₹"+fmt(Math.abs(v));
+  $("#jbpDA").textContent=sign(dA); $("#jbpDA").className="v "+(dA>0?"up":dA<0?"down":"");
+  $("#jbpDL").textContent=sign(dL); $("#jbpDL").className="v "+(dL>0?"up":dL<0?"down":"");
+  $("#jbpDQ").textContent=sign(dQ); $("#jbpDQ").className="v "+(dQ>0?"up":dQ<0?"down":"");
+  // status
+  const st=$("#jbpStatus");
+  if(!JBP.dr.length||!JBP.cr.length){ st.className="jbp-status"; st.textContent="Add at least one Dr and one Cr row."; return; }
+  if(dT===0||cT===0){ st.className="jbp-status"; st.textContent="Enter amounts on both sides."; return; }
+  if(dT!==cT){ st.className="jbp-status bad"; st.textContent=`⚠ Dual aspect broken: Dr ₹${fmt(dT)} ≠ Cr ₹${fmt(cT)} (off by ₹${fmt(Math.abs(dT-cT))}).`; return; }
+  const eqOk = Math.abs(dA-(dL+dQ))<0.001;
+  if(!eqOk){ st.className="jbp-status bad"; st.textContent=`⚠ Equation broken: ΔA ${sign(dA)} ≠ ΔL ${sign(dL)} + ΔC ${sign(dQ)}.`; return; }
+  st.className="jbp-status ok";
+  st.innerHTML=`✓ Balanced. ΔA ${sign(dA)} = ΔL ${sign(dL)} + ΔC ${sign(dQ)}. Ready to post.`;
+}
+function jbpSuggest(q){
+  const host=$("#jbpSuggest");
+  q=(q||"").trim().toLowerCase();
+  if(!q){ host.classList.remove("show"); host.innerHTML=""; return; }
+  const e=jbpEng();
+  const hits = JBP_LIB.filter(n=>n.toLowerCase().includes(q)).slice(0,8);
+  if(!hits.length){ host.innerHTML=`<button disabled style="opacity:.5">No match — add custom: <b>${q}</b></button>`; host.classList.add("show"); return; }
+  host.innerHTML = hits.map(n=>{
+    const t=e?e.classify(n):"A";
+    return `<button data-pick="${n}"><span>${n}</span><span class="ttag">${jbpTypeTag(t)}</span></button>`;
+  }).join("");
+  host.classList.add("show");
+}
+$("#jbpSearch").addEventListener("input",ev=>jbpSuggest(ev.target.value));
+$("#jbpSearch").addEventListener("focus",ev=>jbpSuggest(ev.target.value));
+$("#jbpSuggest").addEventListener("click",ev=>{
+  const b=ev.target.closest("button[data-pick]"); if(!b) return;
+  const name=b.dataset.pick;
+  // ask which side via a tiny prompt-less heuristic: add to side whose total is smaller OR default to Dr if both empty
+  const dT=JBP.dr.reduce((s,r)=>s+(+r.amt||0),0);
+  const cT=JBP.cr.reduce((s,r)=>s+(+r.amt||0),0);
+  // Smart default by natural side
+  const e=jbpEng();
+  let side="dr";
+  if(e){ const nat=e.naturalSide(e.classify(name)); side = nat.toLowerCase(); }
+  // If amounts already exist, push to lighter side
+  if(dT||cT){ side = dT<=cT ? "dr":"cr"; }
+  jbpAdd(side,name);
+  $("#jbpSearch").value=""; $("#jbpSuggest").classList.remove("show");
+  sfx.tap();
+});
+document.addEventListener("click",ev=>{
+  if(!ev.target.closest(".jbp-search")) $("#jbpSuggest").classList.remove("show");
+});
+// Quick-fill chips
+(function(){
+  const host=$("#jbpQuick"); host.innerHTML="";
+  JBP_QUICK.forEach(([lbl,dr,cr])=>{
+    const b=document.createElement("button"); b.textContent="+ "+lbl;
+    b.onclick=()=>{ JBP.dr=dr.map(x=>({...x})); JBP.cr=cr.map(x=>({...x})); $("#jbpNarr").value=lbl; jbpRender(); sfx.pop(); };
+    host.appendChild(b);
+  });
+})();
+$("#jbpClear").onclick=()=>{ JBP.dr=[]; JBP.cr=[]; $("#jbpNarr").value=""; jbpRender(); sfx.tap(); };
+$("#jbpGoSim").onclick=()=>{ go("m7"); };
+$("#jbpPost").onclick=()=>{
+  const narr=$("#jbpNarr").value.trim() || "Manual journal entry";
+  if(!JBP.dr.length||!JBP.cr.length){ toast("Need both Dr and Cr rows","bad"); sfx.bad(); return; }
+  if(JBP.dr.some(r=>!r.amt)||JBP.cr.some(r=>!r.amt)){ toast("Fill every amount","bad"); sfx.bad(); return; }
+  // simPost is wrapped by AcctEngine — it validates dual aspect + equation
+  const ok = window.simPost(narr, JBP.dr.map(r=>({...r})), JBP.cr.map(r=>({...r})));
+  if(ok!==false){
+    confetti(120); sfx.good(); bumpCombo(); awardXP(25,"Journal posted");
+    toast("Posted to Ledger & Balance Sheet ✓","win");
+    JBP.dr=[]; JBP.cr=[]; $("#jbpNarr").value=""; jbpRender();
+  }
+};
+requestAnimationFrame(()=>jbpRender());
+
+/* ============ MODULE 7: SIMULATOR ============ */
+const SIM = { journal:[], ledger:{} , n:0};
+const ACC_TYPE = {Cash:"A", Machinery:"A", Stock:"A", Capital:"Q", "Bank Loan":"L", Sales:"R", Rent:"E", Creditors:"L", Drawings:"Q"};
+function simPost(label, dr, cr){
+  SIM.n++; SIM.journal.push({n:SIM.n,label,dr,cr});
+  // ledger
+  function apply(name,type,amt,side){
+    if(!SIM.ledger[name]) SIM.ledger[name]={type, bal:0};
+    // For A,E: Dr+ Cr-; For L,R,Q: Cr+ Dr-
+    const t=ACC_TYPE[name];
+    const sign = (t==="A"||t==="E") ? (side==="dr"?1:-1) : (side==="cr"?1:-1);
+    SIM.ledger[name].bal += sign*amt;
+  }
+  dr.forEach(x=>apply(x.a,x.t,x.amt,"dr"));
+  cr.forEach(x=>apply(x.a,x.t,x.amt,"cr"));
+  simRender();
+}
+function simRender(){
+  // journal
+  $("#simJournal").innerHTML = SIM.journal.map(j=>{
+    const dr=j.dr.map(x=>`${x.a} A/c Dr.`).join("<br/>");
+    const cr=j.cr.map(x=>`&nbsp;&nbsp;To ${x.a} A/c`).join("<br/>");
+    const drAmt=j.dr.reduce((s,x)=>s+x.amt,0), crAmt=j.cr.reduce((s,x)=>s+x.amt,0);
+    return `<tr><td>${j.n}</td><td>${dr}<br/>${cr}<br/><small style="color:var(--ink-dim)">(${j.label})</small></td><td class="amt">${drAmt.toLocaleString("en-IN")}</td><td class="amt">${crAmt.toLocaleString("en-IN")}</td></tr>`;
+  }).join("") || `<tr><td colspan="4" style="text-align:center;color:var(--ink-dim);padding:20px">No entries yet — tap actions above.</td></tr>`;
+  // ledger
+  $("#simLedger").innerHTML = Object.entries(SIM.ledger).map(([n,o])=>{
+    return `<tr><td>${n}</td><td><small>${({A:"Asset",L:"Liability",E:"Expense",R:"Revenue",Q:"Equity"})[o.type]||""}</small></td><td class="amt">${Math.round(o.bal).toLocaleString("en-IN")}</td></tr>`;
+  }).join("") || `<tr><td colspan="3" style="text-align:center;color:var(--ink-dim);padding:20px">—</td></tr>`;
+  // balance sheet
+  let assets=0,lia=0,cap=0,exp=0,rev=0;
+  Object.entries(SIM.ledger).forEach(([n,o])=>{
+    if(o.type==="A") assets+=o.bal;
+    else if(o.type==="L") lia+=o.bal;
+    else if(o.type==="Q") cap+=o.bal;
+    else if(o.type==="E") exp+=o.bal;
+    else if(o.type==="R") rev+=o.bal;
+  });
+  const adjCap = cap + rev - exp; // P&L flows to capital
+  const liaList = Object.entries(SIM.ledger).filter(([n,o])=>o.type==="L").map(([n,o])=>`<div class="ln"><span>${n}</span><span>${Math.round(o.bal).toLocaleString("en-IN")}</span></div>`).join("");
+  const astList = Object.entries(SIM.ledger).filter(([n,o])=>o.type==="A").map(([n,o])=>`<div class="ln"><span>${n}</span><span>${Math.round(o.bal).toLocaleString("en-IN")}</span></div>`).join("");
+  $("#bsLia").innerHTML = `<div class="ln"><span>Capital (adj. for P&L)</span><span>${Math.round(adjCap).toLocaleString("en-IN")}</span></div>`+liaList;
+  $("#bsAst").innerHTML = astList;
+  const liaT = adjCap + lia, astT = assets;
+  $("#bsLiaT").textContent = Math.round(liaT).toLocaleString("en-IN");
+  $("#bsAstT").textContent = Math.round(astT).toLocaleString("en-IN");
+  const ok = Math.abs(liaT - astT) < 0.5;
+  $("#simBar").style.background = ok? "var(--grad-2)" : "linear-gradient(90deg,#ff5577,#ffb547)";
+  $("#simStatus").className="balance-status"+(ok?"":" bad");
+  $("#simStatus").textContent = ok? "Balanced ✓" : "Off by ₹"+Math.abs(Math.round(liaT-astT)).toLocaleString("en-IN");
+}
+const SIM_ACTIONS = {
+  capital:()=>simPost("Owner brought capital ₹50,000",[{a:"Cash",amt:50000}],[{a:"Capital",amt:50000}]),
+  addCap:()=>simPost("Additional capital by cheque ₹25,000",[{a:"Bank",amt:25000}],[{a:"Capital",amt:25000}]),
+  loan:()=>simPost("Bank loan received ₹20,000",[{a:"Cash",amt:20000}],[{a:"Bank Loan",amt:20000}]),
+  deposit:()=>simPost("Cash deposited into bank ₹10,000",[{a:"Bank",amt:10000}],[{a:"Cash",amt:10000}]),
+  withdrawBank:()=>simPost("Cash withdrawn from bank ₹5,000",[{a:"Cash",amt:5000}],[{a:"Bank",amt:5000}]),
+  buyM:()=>simPost("Bought machinery ₹15,000 (cash)",[{a:"Machinery",amt:15000}],[{a:"Cash",amt:15000}]),
+  buyFurnB:()=>simPost("Bought furniture ₹10,000 (cheque)",[{a:"Furniture",amt:10000}],[{a:"Bank",amt:10000}]),
+  buyBuild:()=>simPost("Bought building ₹60,000 (cheque)",[{a:"Building",amt:60000}],[{a:"Bank",amt:60000}]),
+  creditP:()=>simPost("Credit purchase ₹5,000",[{a:"Purchases",amt:5000}],[{a:"Creditors",amt:5000}]),
+  cashP:()=>simPost("Cash purchase ₹4,000",[{a:"Purchases",amt:4000}],[{a:"Cash",amt:4000}]),
+  sale:()=>simPost("Cash sale ₹8,000",[{a:"Cash",amt:8000}],[{a:"Sales",amt:8000}]),
+  creditSale:()=>simPost("Credit sale to Mohan ₹7,000",[{a:"Debtors",amt:7000}],[{a:"Sales",amt:7000}]),
+  recvDeb:()=>simPost("Received from Mohan ₹6,000",[{a:"Cash",amt:6000}],[{a:"Debtors",amt:6000}]),
+  payCr:()=>simPost("Paid creditor ₹3,000",[{a:"Creditors",amt:3000}],[{a:"Cash",amt:3000}]),
+  purRet:()=>simPost("Goods returned to creditor ₹1,000",[{a:"Creditors",amt:1000}],[{a:"Purchase Returns",amt:1000}]),
+  salRet:()=>simPost("Sales return from Mohan ₹500",[{a:"Sales Returns",amt:500}],[{a:"Debtors",amt:500}]),
+  rent:()=>simPost("Paid rent ₹2,000",[{a:"Rent",amt:2000}],[{a:"Cash",amt:2000}]),
+  salary:()=>simPost("Paid salary ₹5,000 (cheque)",[{a:"Salary",amt:5000}],[{a:"Bank",amt:5000}]),
+  wages:()=>simPost("Paid wages ₹1,800",[{a:"Wages",amt:1800}],[{a:"Cash",amt:1800}]),
+  elec:()=>simPost("Electricity bill ₹800",[{a:"Electricity",amt:800}],[{a:"Cash",amt:800}]),
+  ins:()=>simPost("Insurance premium ₹2,400",[{a:"Insurance",amt:2400}],[{a:"Cash",amt:2400}]),
+  comm:()=>simPost("Commission received ₹1,500",[{a:"Cash",amt:1500}],[{a:"Commission Received",amt:1500}]),
+  intRcvd:()=>simPost("Interest received ₹600 (cheque)",[{a:"Bank",amt:600}],[{a:"Interest Received",amt:600}]),
+  discAllow:()=>simPost("Discount allowed to debtor ₹200",[{a:"Discount Allowed",amt:200}],[{a:"Debtors",amt:200}]),
+  discRecv:()=>simPost("Discount received from creditor ₹150",[{a:"Creditors",amt:150}],[{a:"Discount Received",amt:150}]),
+  dep:()=>simPost("Depreciation on machinery ₹1,500",[{a:"Depreciation",amt:1500}],[{a:"Machinery",amt:1500}]),
+  bad:()=>simPost("Bad debts written off ₹700",[{a:"Bad Debts",amt:700}],[{a:"Debtors",amt:700}]),
+  outSal:()=>simPost("Salary outstanding ₹3,000",[{a:"Salary",amt:3000}],[{a:"Outstanding Salary",amt:3000}]),
+  prepRent:()=>simPost("Rent paid in advance ₹6,000",[{a:"Prepaid Rent",amt:6000}],[{a:"Cash",amt:6000}]),
+  billPay:()=>simPost("Issued Bill Payable to creditor ₹4,000",[{a:"Creditors",amt:4000}],[{a:"Bills Payable",amt:4000}]),
+  billRcv:()=>simPost("Accepted Bill Receivable from Mohan ₹3,500",[{a:"Bills Receivable",amt:3500}],[{a:"Debtors",amt:3500}]),
+  drawing:()=>simPost("Owner drawings ₹4,000 (cash)",[{a:"Drawings",amt:4000}],[{a:"Cash",amt:4000}]),
+  reset:()=>{SIM.journal=[];SIM.ledger={};SIM.n=0;simRender();}
+};
+$$("#m7 [data-sim]").forEach(b=>b.onclick=()=>{SIM_ACTIONS[b.dataset.sim](); sfx.pop(); awardXP(6,"Posted entry"); if(SIM.journal.length>=5) unlockBadge("simulator");});
+simRender();
+
+/* ============ MODULE 8: WHAT IF ============ */
+function whatif(){
+  const a=+$("#sAst").value, l=+$("#sLia").value;
+  const cap=a-l;
+  $("#vAst").textContent = a.toLocaleString("en-IN");
+  $("#vLia").textContent = l.toLocaleString("en-IN");
+  $("#vCap").textContent = cap.toLocaleString("en-IN");
+  let msg="Healthy net worth ✓", cls="";
+  if(cap<0){ msg="🚨 Capital is NEGATIVE — liabilities exceed assets. Business is insolvent."; cls="bad"; }
+  else if(cap<a*0.2){ msg="⚠ Highly leveraged — most assets are financed by liabilities."; cls="bad"; }
+  $("#vStatus").textContent=msg; $("#vStatus").className="balance-status center"+(cls?" bad":"");
+  $("#vNote").innerHTML = cap<0 ? "Add assets or pay down liabilities. Capital must stay positive for a healthy business."
+       : cap<a*0.2 ? "Try lowering liabilities — feel the equation breathe."
+       : "Strong owner equity. Lower liability share = lower risk.";
+}
+$("#sAst").oninput=$("#sLia").oninput=whatif; whatif();
+
+/* ============ MODULE 10: BENTO ============ */
+const BENTO = [
+  {cls:"s1",ttl:"The Accounting Equation", desc:"Assets = Capital + Liabilities. Always. Forever.",
+    more:"Every transaction touches at least two accounts and keeps this equation balanced. Example: take a ₹10k loan → Cash +10k, Loan +10k."},
+  {cls:"s2",ttl:"Golden Rules (Modern)", desc:"A·E ↑Dr ↓Cr · L·R·Q ↑Cr ↓Dr",
+    more:"Assets & Expenses live on the Debit side when they grow. Liabilities, Revenue & Equity live on the Credit side."},
+  {cls:"s3",ttl:"Personal Account Rule (Traditional)", desc:"Debit the receiver, Credit the giver.",
+    more:"Used in traditional Indian classification for personal accounts (people, firms)."},
+  {cls:"s4",ttl:"Real Account Rule", desc:"Debit what comes in, Credit what goes out.",
+    more:"For assets (cash, machinery, goods)."},
+  {cls:"s5",ttl:"Nominal Account Rule", desc:"Debit all expenses & losses, Credit all incomes & gains.",
+    more:"For nominal accounts (rent, salary, sales)."},
+  {cls:"s6",ttl:"Journal → Ledger → Trial Balance → BS", desc:"The full flow of accounting in one breath.",
+    more:"Record (Journal) → Classify (Ledger) → Summarise (Trial Balance) → Report (Financial Statements)."},
+  {cls:"s7",ttl:"Mini Quiz", desc:"Tap to reveal: ‘Salary paid in cash’ — Dr/Cr?",
+    more:"<b>Debit Salary, Credit Cash.</b> Expense rises (Dr), Asset falls (Cr)."},
+  {cls:"s8",ttl:"Concept Recap (Capital, Drawings, Profit)", desc:"Capital is what the owner invests. Drawings reduce it. Profits add to it.",
+    more:"Closing Capital = Opening Capital + Additional Capital + Profit − Drawings − Loss. This is why P&L flows back into Capital on the Balance Sheet."},
+];
+const bento=$("#bento");
+BENTO.forEach(c=>{
+  const el=document.createElement("div");
+  el.className="bcell "+c.cls;
+  el.innerHTML=`<div class="ttl">${c.ttl}</div><div class="desc">${c.desc}</div><div class="more">${c.more}</div>`;
+  el.onclick=()=>{el.classList.toggle("open"); sfx.tap(); awardXP(2,"Cheat sheet read");};
+  bento.appendChild(el);
+});
+
+/* ============ CINEMA ============ */
+function showCinema(){
+  $("#cinema").classList.add("show");
+  confetti(220); sfx.level();
+}
+$("#cinemaClose").onclick=()=>$("#cinema").classList.remove("show");
+$("#cinemaShare").onclick=async ()=>{
+  const txt = `I just escaped rote learning in Accounting with the ACCOUNTING UNIVERSE 🌌 — by PP Creations.`;
+  try{ if(navigator.share) await navigator.share({title:"Accounting Universe", text:txt}); else { await navigator.clipboard.writeText(txt); toast("Copied to clipboard ✓","win"); } }catch(e){}
+};
+
+/* ============ KEYBOARD A11y (Input-Focus Protection) ============ */
+function _isEditing(){
+  const el=document.activeElement;
+  if(!el) return false;
+  const tag=(el.tagName||"").toLowerCase();
+  if(tag==="input"||tag==="textarea"||tag==="select") return true;
+  if(el.isContentEditable) return true;
+  return false;
+}
+document.addEventListener("keydown",e=>{
+  if(_isEditing()) return;            // never hijack typing
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(e.key>="1"&&e.key<="9"){ go("m"+e.key); }
+  else if(e.key==="0"){ go("m10"); }
+  else if(e.key.toLowerCase()==="h"){ go("home"); }
+});
+
+/* ============ PERSISTENT SCREEN STATE ============ */
+try{
+  const _last=sessionStorage.getItem("au:screen");
+  if(_last) setTimeout(()=>{ try{ go(_last); }catch(_){ } },0);
+  const _origGo=window.go;
+  if(typeof _origGo==="function"){
+    window.go=function(id){ try{ sessionStorage.setItem("au:screen",id); }catch(_){ } return _origGo(id); };
+  }
+}catch(_){}
+
+/* ============ INIT TOAST ============ */
+setTimeout(()=>toast("Tip: press 1–9 or 0 to jump modules · h for home (typing is safe)"), 600);
+
+/* ============ MODULE 11: FINAL ACCOUNTS (Trading + P&L + Balance Sheet) ============ */
+/* Rule (never breaks):
+   Trading A/c Dr : Opening Stock, Purchases (−Returns), Wages, Carriage Inwards, Direct Expenses, Freight
+   Trading A/c Cr : Sales (−Returns), Closing Stock
+   P&L A/c    Dr : Salary, Rent, Office Exp, Depreciation, Discount Allowed, Advertisement, Insurance
+   P&L A/c    Cr : Commission Received, Discount Received, Interest Received, Rent Received
+   B/Sheet Lia   : Capital, Loans, Creditors, Bills Payable, Outstanding Expenses
+   B/Sheet Asset : Cash, Bank, Debtors, Closing Stock, Machinery, Furniture, Building, Prepaid
+*/
+const FA_ITEMS = [
+  {n:"Opening Stock",      amt:15000, h:"trad-dr"},
+  {n:"Purchases",          amt:80000, h:"trad-dr"},
+  {n:"Wages (Direct)",     amt: 6000, h:"trad-dr"},
+  {n:"Carriage Inwards",   amt: 2000, h:"trad-dr"},
+  {n:"Sales",              amt:140000,h:"trad-cr"},
+  {n:"Closing Stock",      amt:20000, h:"trad-cr", alsoBS:"bs-ast"},
+  {n:"Salary",             amt:12000, h:"pl-dr"},
+  {n:"Rent (Office)",      amt: 6000, h:"pl-dr"},
+  {n:"Depreciation",       amt: 3000, h:"pl-dr"},
+  {n:"Discount Allowed",   amt: 1000, h:"pl-dr"},
+  {n:"Commission Received",amt: 4000, h:"pl-cr"},
+  {n:"Discount Received",  amt: 2000, h:"pl-cr"},
+  {n:"Capital",            amt:100000,h:"bs-lia"},
+  {n:"Bank Loan",          amt: 30000,h:"bs-lia"},
+  {n:"Creditors",          amt: 18000,h:"bs-lia"},
+  {n:"O/s Salary",         amt:  2000,h:"bs-lia"},
+  {n:"Cash in Hand",       amt: 10000,h:"bs-ast"},
+  {n:"Bank Balance",       amt: 25000,h:"bs-ast"},
+  {n:"Debtors",            amt: 22000,h:"bs-ast"},
+  {n:"Machinery",          amt: 60000,h:"bs-ast"},
+  {n:"Furniture",          amt: 14000,h:"bs-ast"},
+];
+const FA = {ok:0,bad:0};
+function faInit(){
+  FA.ok=0; FA.bad=0; updateFAHud();
+  $$("#m11 .dz .dz-chips").forEach(z=>z.innerHTML="");
+  $("#faReport").hidden = true;
+  const pool=$("#faPool"); pool.innerHTML="";
+  // shuffle a copy
+  const items=[...FA_ITEMS].sort(()=>Math.random()-.5);
+  items.forEach(it=>{
+    const c=document.createElement("div");
+    const typ = window.AcctEngine ? window.AcctEngine.classify(it.n) : "A";
+    c.className="chip"; c.dataset.name=it.n; c.dataset.amt=it.amt; c.dataset.home=it.h; if(it.alsoBS) c.dataset.also=it.alsoBS;
+    if (typeof _typeDesc === "function") c.dataset.tooltip = _typeDesc(typ);
+    c.innerHTML = `${it.n} <small style="opacity:.65;font-family:var(--font-mono)">₹${it.amt.toLocaleString("en-IN")}</small>`;
+    makeDraggable(c, bucket=>{
+      const dest = bucket.dataset.fa;
+      const correct = (dest===c.dataset.home) || (c.dataset.also && dest===c.dataset.also);
+      if(correct){
+        bucket.querySelector(".dz-chips").appendChild(c);
+        c.classList.add("correct"); FA.ok++;
+        sfx.good(); bumpCombo(); awardXP(6,"Right house ✓");
+      } else {
+        c.classList.add("wrong"); FA.bad++;
+        sfx.bad(); resetCombo();
+        toast("Wrong house — "+c.dataset.name+" belongs in: "+labelOf(c.dataset.home),"bad");
+        setTimeout(()=>c.classList.remove("wrong"), 500);
+      }
+      updateFAHud();
+    });
+    pool.appendChild(c);
+  });
+  updateFAHud();
+}
+function labelOf(h){return ({"trad-dr":"Trading Dr","trad-cr":"Trading Cr","pl-dr":"P&L Dr","pl-cr":"P&L Cr","bs-lia":"B/S Liabilities","bs-ast":"B/S Assets"})[h]||h}
+function updateFAHud(){
+  $("#faOK").textContent=FA.ok; $("#faBad").textContent=FA.bad;
+  $("#faRem").textContent = $$("#faPool .chip").length;
+}
+function faPrepare(){
+  // Use the canonical correct allocation to compute statements (rule never breaks).
+  const sum = h => FA_ITEMS.filter(i=>i.h===h).reduce((s,i)=>s+i.amt,0);
+  const closingStock = FA_ITEMS.find(i=>i.n==="Closing Stock").amt;
+  // Trading
+  const tradDr = FA_ITEMS.filter(i=>i.h==="trad-dr");
+  const tradCr = FA_ITEMS.filter(i=>i.h==="trad-cr");
+  const tradDrT = tradDr.reduce((s,i)=>s+i.amt,0);
+  const tradCrT = tradCr.reduce((s,i)=>s+i.amt,0);
+  let rows=[];
+  const maxL = Math.max(tradDr.length, tradCr.length);
+  for(let i=0;i<maxL;i++){
+    const a=tradDr[i], b=tradCr[i];
+    rows.push(`<tr><td>${a?"To "+a.n:""}</td><td class="right">${a?a.amt.toLocaleString("en-IN"):""}</td><td>${b?"By "+b.n:""}</td><td class="right">${b?b.amt.toLocaleString("en-IN"):""}</td></tr>`);
+  }
+  const gp = tradCrT - tradDrT;
+  const gpRow = gp>=0
+    ? `<tr><td><b>To Gross Profit c/d</b></td><td class="right"><b>${gp.toLocaleString("en-IN")}</b></td><td></td><td class="right"></td></tr>`
+    : `<tr><td></td><td class="right"></td><td><b>By Gross Loss c/d</b></td><td class="right"><b>${Math.abs(gp).toLocaleString("en-IN")}</b></td></tr>`;
+  rows.push(gpRow);
+  const totT = Math.max(tradDrT + Math.max(gp,0), tradCrT + Math.max(-gp,0));
+  rows.push(`<tr style="font-weight:700;background:rgba(255,255,255,.04)"><td>Total</td><td class="right">${totT.toLocaleString("en-IN")}</td><td>Total</td><td class="right">${totT.toLocaleString("en-IN")}</td></tr>`);
+  $("#faTrad").innerHTML = rows.join("");
+  $("#faGP").textContent = (gp>=0?"Gross Profit":"Gross Loss") + " = ₹" + Math.abs(gp).toLocaleString("en-IN") + "  →  carried to P&L A/c";
+  $("#faGP").className = "report-foot"+(gp<0?" loss":"");
+
+  // P&L
+  const plDr = FA_ITEMS.filter(i=>i.h==="pl-dr");
+  const plCr = [...FA_ITEMS.filter(i=>i.h==="pl-cr")];
+  // bring GP from trading into P&L credit (or GL to Dr)
+  if(gp>=0) plCr.unshift({n:"Gross Profit b/d", amt:gp});
+  else plDr.unshift({n:"Gross Loss b/d", amt:-gp});
+  const plDrT = plDr.reduce((s,i)=>s+i.amt,0);
+  const plCrT = plCr.reduce((s,i)=>s+i.amt,0);
+  let prows=[];
+  const m2 = Math.max(plDr.length, plCr.length);
+  for(let i=0;i<m2;i++){
+    const a=plDr[i], b=plCr[i];
+    prows.push(`<tr><td>${a?"To "+a.n:""}</td><td class="right">${a?a.amt.toLocaleString("en-IN"):""}</td><td>${b?"By "+b.n:""}</td><td class="right">${b?b.amt.toLocaleString("en-IN"):""}</td></tr>`);
+  }
+  const np = plCrT - plDrT;
+  const npRow = np>=0
+    ? `<tr><td><b>To Net Profit (to Capital)</b></td><td class="right"><b>${np.toLocaleString("en-IN")}</b></td><td></td><td class="right"></td></tr>`
+    : `<tr><td></td><td class="right"></td><td><b>By Net Loss (from Capital)</b></td><td class="right"><b>${Math.abs(np).toLocaleString("en-IN")}</b></td></tr>`;
+  prows.push(npRow);
+  const totPL = Math.max(plDrT + Math.max(np,0), plCrT + Math.max(-np,0));
+  prows.push(`<tr style="font-weight:700;background:rgba(255,255,255,.04)"><td>Total</td><td class="right">${totPL.toLocaleString("en-IN")}</td><td>Total</td><td class="right">${totPL.toLocaleString("en-IN")}</td></tr>`);
+  $("#faPL").innerHTML = prows.join("");
+  $("#faNP").textContent = (np>=0?"Net Profit":"Net Loss") + " = ₹" + Math.abs(np).toLocaleString("en-IN") + "  →  added to / deducted from Capital";
+  $("#faNP").className = "report-foot"+(np<0?" loss":"");
+
+  // Balance Sheet
+  const bsLia = FA_ITEMS.filter(i=>i.h==="bs-lia").map(i=>({...i}));
+  const cap = bsLia.find(i=>i.n==="Capital");
+  if(cap) cap.amt += np; // P&L to capital
+  const bsAst = FA_ITEMS.filter(i=>i.h==="bs-ast").map(i=>({...i}));
+  // closing stock also appears as asset (alsoBS) — already in bs-ast list? No, h is trad-cr, so add it:
+  if(!bsAst.find(i=>i.n==="Closing Stock")) bsAst.push({n:"Closing Stock", amt:closingStock});
+  const liaT = bsLia.reduce((s,i)=>s+i.amt,0);
+  const astT = bsAst.reduce((s,i)=>s+i.amt,0);
+  let brows=[];
+  const m3 = Math.max(bsLia.length, bsAst.length);
+  for(let i=0;i<m3;i++){
+    const a=bsLia[i], b=bsAst[i];
+    const aN = a ? (a.n==="Capital" ? `${a.n} (incl. ${np>=0?"+":""}${np.toLocaleString("en-IN")} P&L)` : a.n) : "";
+    brows.push(`<tr><td>${aN}</td><td class="right">${a?a.amt.toLocaleString("en-IN"):""}</td><td>${b?b.n:""}</td><td class="right">${b?b.amt.toLocaleString("en-IN"):""}</td></tr>`);
+  }
+  brows.push(`<tr style="font-weight:700;background:rgba(255,255,255,.04)"><td>Total</td><td class="right">${liaT.toLocaleString("en-IN")}</td><td>Total</td><td class="right">${astT.toLocaleString("en-IN")}</td></tr>`);
+  $("#faBS").innerHTML = brows.join("");
+  const balanced = Math.abs(liaT-astT) < 0.5;
+  $("#faBSTot").textContent = balanced ? `✓ Balanced: Total Liabilities = Total Assets = ₹${liaT.toLocaleString("en-IN")}  (Rule never breaks)` : `✗ Off by ₹${Math.abs(liaT-astT).toLocaleString("en-IN")}`;
+  $("#faBSTot").className = "report-foot"+(balanced?"":" loss");
+  $("#faReport").hidden = false;
+  if(balanced){ confetti(160); awardXP(40,"Final Accounts prepared"); unlockBadge("final_accounts"); }
+}
+$("#faReset").onclick=()=>{faInit(); sfx.tap()};
+$("#faPrepare").onclick=()=>{faPrepare(); sfx.good();};
+faInit();
+
+/* ============ MODULE 12: BALANCE OF ACCOUNT (Dr/Cr) ============ */
+const BAL = [
+  {n:"Cash A/c",       ty:"Asset",     side:"dr", why:"Asset accounts have a <b>Debit</b> balance. Cash received is Dr, cash paid is Cr — receipts usually exceed payments."},
+  {n:"Bank A/c",       ty:"Asset",     side:"dr", why:"Asset → natural <b>Dr</b> balance. (If overdrawn, it becomes a Cr balance = Bank Overdraft, a Liability.)"},
+  {n:"Debtors A/c",    ty:"Asset",     side:"dr", why:"Customers owe us → Asset → <b>Dr</b> balance."},
+  {n:"Stock A/c",      ty:"Asset",     side:"dr", why:"Goods we own → Asset → <b>Dr</b> balance."},
+  {n:"Machinery A/c",  ty:"Asset",     side:"dr", why:"Fixed Asset → <b>Dr</b> balance."},
+  {n:"Capital A/c",    ty:"Equity",    side:"cr", why:"Owner's claim on business → <b>Cr</b> balance. Increases by profit & fresh capital, decreases by drawings/loss."},
+  {n:"Bank Loan A/c",  ty:"Liability", side:"cr", why:"We owe the bank → Liability → <b>Cr</b> balance."},
+  {n:"Creditors A/c",  ty:"Liability", side:"cr", why:"We owe suppliers → Liability → <b>Cr</b> balance."},
+  {n:"Sales A/c",      ty:"Revenue",   side:"cr", why:"Income earned → <b>Cr</b> balance. Closed to Trading A/c at year-end."},
+  {n:"Commission Recd",ty:"Revenue",   side:"cr", why:"Income → <b>Cr</b> balance. Closed to P&L A/c."},
+  {n:"Purchases A/c",  ty:"Expense",   side:"dr", why:"Direct cost → <b>Dr</b> balance. Closed to Trading A/c."},
+  {n:"Salary A/c",     ty:"Expense",   side:"dr", why:"Indirect expense → <b>Dr</b> balance. Closed to P&L A/c."},
+  {n:"Rent Paid A/c",  ty:"Expense",   side:"dr", why:"Expense → <b>Dr</b> balance."},
+  {n:"Drawings A/c",   ty:"Contra-Equity", side:"dr", why:"Drawings reduce Capital → recorded on Dr side, deducted from Capital in Balance Sheet."},
+];
+const bg=$("#balGrid");
+BAL.forEach(b=>{
+  const el=document.createElement("div"); el.className="bcard";
+  el.innerHTML = `
+    <div class="face front">
+      <div><div class="ty">${b.ty}</div><div class="nm">${b.n}</div></div>
+      <div class="side ${b.side}">${b.side==="dr"?"Dr. balance":"Cr. balance"}</div>
+    </div>
+    <div class="face back"><p>${b.why}</p><div class="side ${b.side}" style="text-align:right">${b.side.toUpperCase()}</div></div>`;
+  el.onclick=()=>{el.classList.toggle("flip"); sfx.tap(); awardXP(2,"Balance learned");};
+  bg.appendChild(el);
+});
+
+const B = {i:0, score:0, set:[]};
+function bStart(){
+  B.i=0; B.score=0;
+  B.set = [...BAL].sort(()=>Math.random()-.5).slice(0,8);
+  bRender();
+}
+function bRender(){
+  if(B.i>=B.set.length){
+    $("#bMission").innerHTML = `🏆 You scored <b>${B.score}/${B.set.length}</b>. ${B.score>=6?"Master of Balances!":"Flip the cards & try again."}`;
+    $("#bOpts").innerHTML=""; if(B.score>=6) unlockBadge("balance_master");
+    return;
+  }
+  const q=B.set[B.i];
+  $("#bQ").textContent=B.i+1; $("#bScore").textContent=B.score;
+  $("#bMission").innerHTML = `Mission ${B.i+1}: <b>${q.n}</b> — Which side is its <em>natural balance</em>?`;
+  $("#bOpts").innerHTML="";
+  ["dr","cr"].forEach(side=>{
+    const btn=document.createElement("button");
+    btn.innerHTML = side==="dr" ? "🟦 Debit (Dr.)" : "🟪 Credit (Cr.)";
+    btn.onclick=()=>{
+      const ok = side===q.side;
+      if(ok){btn.classList.add("correct"); sfx.good(); B.score++; bumpCombo(); awardXP(8,"Dr/Cr right"); $("#bExplain").innerHTML="✅ "+q.why;}
+      else{btn.classList.add("wrong"); sfx.bad(); resetCombo(); $("#bExplain").innerHTML="❌ "+q.why;}
+      $$("#bOpts button").forEach(x=>x.disabled=true);
+      setTimeout(()=>{B.i++; bRender();}, 1100);
+    };
+    $("#bOpts").appendChild(btn);
+  });
+}
+$("#bRestart").onclick=()=>{bStart(); sfx.tap()};
+bStart();
+
+/* ============ AUDIT FIX: Drawings display sign in Simulator ============ */
+/* Drawings account is a contra-equity. Internally stored as negative Q so it reduces Capital.
+   Re-wrap simRender's ledger row formatter via a small DOM patch after each call. */
+const _simRenderOrig = simRender;
+simRender = function(){
+  _simRenderOrig.apply(this, arguments);
+  // Show Drawings as positive Dr balance in ledger for clarity
+  $$("#simLedger tr").forEach(tr=>{
+    const td=tr.querySelector("td"); if(!td) return;
+    if(td.textContent.trim()==="Drawings"){
+      const tds=tr.querySelectorAll("td");
+      if(tds[2]){
+        const v = Math.abs(parseFloat(tds[2].textContent.replace(/[,]/g,""))||0);
+        tds[2].innerHTML = v.toLocaleString("en-IN")+" <small style='color:var(--ink-dim)'>(Dr)</small>";
+      }
+    }
+  });
+};
+simRender();
+
+/* ============ Extra keyboard shortcuts for new modules ============ */
+document.addEventListener("keydown",e=>{
+  if(_isEditing()) return;
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(e.key==="-"||e.key==="_") go("m11");
+  if(e.key==="="||e.key==="+") go("m12");
+});
+
+/* ============================================================
+   UNIFIED ACCOUNTING STATE BUS
+   One source of truth → Simulator → Ledger → Balance Sheet →
+   Equation Equalizer (m1) → What-If (m8). No screen jumps.
+   ============================================================ */
+(function(){
+  // --- tiny pub/sub
+  const subs={};
+  const bus={
+    on:(ev,fn)=>{(subs[ev]=subs[ev]||[]).push(fn);},
+    emit:(ev,p)=>{(subs[ev]||[]).forEach(fn=>{try{fn(p)}catch(e){console.warn(e)}})}
+  };
+  window.AUBus = bus;
+
+  // --- persistence (survives screen switches / reloads)
+  const KEY="au:sim:v1";
+  try{
+    const raw=sessionStorage.getItem(KEY);
+    if(raw){
+      const s=JSON.parse(raw);
+      if(s&&s.journal){ SIM.journal=s.journal; SIM.ledger=s.ledger||{}; SIM.n=s.n||0; }
+    }
+  }catch(_){}
+  function persist(){
+    try{ sessionStorage.setItem(KEY, JSON.stringify({journal:SIM.journal,ledger:SIM.ledger,n:SIM.n})); }catch(_){}
+  }
+
+  // --- compute canonical totals from SIM ledger
+  function totals(){
+    let assets=0,lia=0,cap=0,exp=0,rev=0;
+    Object.values(SIM.ledger).forEach(o=>{
+      if(o.type==="A") assets+=o.bal;
+      else if(o.type==="L") lia+=o.bal;
+      else if(o.type==="Q") cap+=o.bal;
+      else if(o.type==="E") exp+=o.bal;
+      else if(o.type==="R") rev+=o.bal;
+    });
+    const adjCap = cap + rev - exp;            // P&L closed to capital
+    const liaSide = adjCap + lia;
+    const balanced = Math.abs(assets - liaSide) < 0.5;
+    return {assets,lia,cap,exp,rev,adjCap,liaSide,balanced,n:SIM.journal.length};
+  }
+  window.AUState = totals;
+
+  // --- wrap simRender so every state change persists + broadcasts
+  const _r = simRender;
+  simRender = function(){
+    _r.apply(this, arguments);
+    persist();
+    bus.emit("state", totals());
+  };
+
+  // --- mirror to Equation Equalizer (m1) automatically
+  // Only mirrors when sim has activity and user hasn't manually moved m1 in last 3s
+  let m1Touched=0;
+  ["txApply","txReset"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener("click",()=>{ m1Touched=Date.now(); });
+  });
+  bus.on("state",t=>{
+    if(t.n===0) return;
+    if(Date.now()-m1Touched < 3000) return;   // respect manual exploration
+    if(typeof M1!=="undefined" && typeof m1Render==="function"){
+      // Mirror simulator totals into M1 individual accounts
+      M1_ACCTS.Cash = t.assets;
+      M1_ACCTS.Capital = t.adjCap;
+      M1_ACCTS.Creditors = t.lia;
+      M1.log.push({label:"↻ Synced from Simulator",
+        detail:`A ₹${Math.round(t.assets).toLocaleString("en-IN")} = C ₹${Math.round(t.adjCap).toLocaleString("en-IN")} + L ₹${Math.round(t.lia).toLocaleString("en-IN")}`});
+      if(M1.log.length>30) M1.log=M1.log.slice(-30);
+      m1Render();
+    }
+  });
+
+  // --- mirror to What-If (m8) sliders when user opens that screen
+  bus.on("state",t=>{
+    const a=document.getElementById("sAst"), l=document.getElementById("sLia");
+    if(!a||!l||t.n===0) return;
+    // only update if sliders are still at defaults / untouched recently
+    if(a.dataset.touched==="1"||l.dataset.touched==="1") return;
+    const maxA=+a.max||500000, maxL=+l.max||500000;
+    a.value=Math.min(Math.max(Math.round(t.assets),+a.min||0),maxA);
+    l.value=Math.min(Math.max(Math.round(t.lia),+l.min||0),maxL);
+    if(typeof whatif==="function") whatif();
+  });
+  ["sAst","sLia"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener("input",()=>{ el.dataset.touched="1"; });
+  });
+
+  // --- initial paint with restored state
+  simRender();
+
+  // --- live status pill in nav (passive indicator, never steals focus)
+  const pill=document.createElement("div");
+  pill.id="auSyncPill";
+  pill.style.cssText="position:fixed;bottom:10px;right:10px;z-index:60;padding:6px 12px;border-radius:999px;font:600 11px/1 system-ui,sans-serif;letter-spacing:.5px;backdrop-filter:blur(10px);background:rgba(20,30,50,.55);border:1px solid rgba(255,255,255,.12);color:#cfe;pointer-events:none;transition:all .3s";
+  pill.textContent="● SYNCED";
+  document.body.appendChild(pill);
+  bus.on("state",t=>{
+    pill.textContent = t.n===0 ? "● IDLE"
+      : (t.balanced ? `● A=C+L  ₹${Math.round(t.assets).toLocaleString("en-IN")}`
+                   : `● OFF BY ₹${Math.abs(Math.round(t.assets-t.liaSide)).toLocaleString("en-IN")}`);
+    pill.style.color = t.balanced? "#7fffd4" : "#ffb547";
+    pill.style.borderColor = t.balanced? "rgba(127,255,212,.4)" : "rgba(255,181,71,.5)";
+  });
+  bus.emit("state", totals());
+})();
+
+/* ============================================================
+   UNIVERSAL ACCOUNTING RULES ENGINE  (CBSE XI compliant)
+   Single source of truth for:
+     · Account classification (Modern + Traditional)
+     · Debit/Credit natural sides
+     · Increase/Decrease impact per side
+     · Journal entry validation (dual aspect)
+     · Accounting equation validation (A = C + L)
+   Every module (m1, m6, m7, m9, m11, m12, future) MUST call
+   AcctEngine.validate() before posting and AcctEngine.impact()
+   to know which way the equation moves.
+   ============================================================ */
+(function(){
+  // --- 1. Classification (Modern approach) -------------------
+  //   A = Asset · L = Liability · Q = Capital/Equity (Owner)
+  //   E = Expense · R = Revenue
+  //   X = Contra-equity (Drawings) — stored under Q with sign rules
+  const T = {
+    // Assets
+    Cash:"A", Bank:"A", "Cash in Hand":"A", "Bank Balance":"A",
+    Stock:"A", "Closing Stock":"A", "Opening Stock":"A", Inventory:"A",
+    Debtors:"A", "Bills Receivable":"A", "Accounts Receivable":"A",
+    Machinery:"A", Furniture:"A", Building:"A", Land:"A", Equipment:"A",
+    Vehicle:"A", Computer:"A", Goodwill:"A", Investments:"A",
+    Prepaid:"A", "Prepaid Expenses":"A", "Accrued Income":"A",
+    // Liabilities
+    Creditors:"L", "Accounts Payable":"L", "Bills Payable":"L",
+    "Bank Loan":"L", Loan:"L", "Loan from Bank":"L",
+    "Outstanding Expenses":"L", "O/s Salary":"L", "O/s Rent":"L",
+    "Income Received in Advance":"L", "Unearned Income":"L",
+    // Equity
+    Capital:"Q", "Owner's Capital":"Q", "Share Capital":"Q",
+    Reserves:"Q", "Retained Earnings":"Q",
+    Drawings:"X",
+    // Revenues
+    Sales:"R", "Service Revenue":"R", "Commission Received":"R",
+    "Interest Received":"R", "Rent Received":"R",
+    "Discount Received":"R", "Dividend Received":"R",
+    // Expenses
+    Purchases:"E", "Purchase Returns":"R", "Sales Returns":"E",
+    Salary:"E", Wages:"E", "Wages (Direct)":"E", Rent:"E", "Rent (Office)":"E",
+    Electricity:"E", "Office Exp":"E", "Office Expenses":"E",
+    Advertisement:"E", Insurance:"E", "Carriage Inwards":"E",
+    "Carriage Outwards":"E", Freight:"E", Depreciation:"E",
+    "Discount Allowed":"E", Interest:"E", "Interest Paid":"E", "Bad Debts":"E",
+    Commission:"E"
+  };
+  function classify(name){
+    if(T[name]) return T[name];
+    const n=(name||"").toLowerCase();
+    if(/cash|bank|debtor|stock|inventory|machinery|furniture|building|land|asset|vehicle|computer|goodwill|invest|prepaid|receivable/.test(n)) return "A";
+    if(/loan|creditor|payable|outstanding|unearned|advance from/.test(n)) return "L";
+    if(/capital|equity|reserve/.test(n)) return "Q";
+    if(/drawing/.test(n)) return "X";
+    if(/sales|received|revenue|income|gain/.test(n)) return "R";
+    return "E"; // default to expense
+  }
+
+  // --- 2. Natural side ---------------------------------------
+  //   Assets, Expenses, Drawings → Debit balance
+  //   Liabilities, Capital, Revenue → Credit balance
+  function naturalSide(type){
+    return (type==="A"||type==="E"||type==="X") ? "Dr" : "Cr";
+  }
+
+  // --- 3. Sign of a posting on the ACCOUNT's own balance -----
+  // returns +1 if this side INCREASES the account, -1 if DECREASES
+  function effect(type, side){
+    const nat = naturalSide(type);
+    return (side===nat) ? +1 : -1;
+  }
+
+  // --- 4. Effect on the accounting equation totals -----------
+  //   returns {dA,dL,dQ}  where Q already absorbs E,R,X
+  //   E posted Dr  → Q decreases (loss reduces capital)
+  //   R posted Cr  → Q increases (profit adds to capital)
+  //   X (Drawings) Dr → Q decreases
+  function eqDelta(type, side, amt){
+    const e = effect(type, side) * amt;       // change in account bal
+    if(type==="A") return {dA:e,  dL:0,  dQ:0};
+    if(type==="L") return {dA:0,  dL:e,  dQ:0};
+    if(type==="Q") return {dA:0,  dL:0,  dQ:e};
+    if(type==="R") return {dA:0,  dL:0,  dQ:e};   // revenue ↑ capital
+    if(type==="E") return {dA:0,  dL:0,  dQ:-e};  // expense ↓ capital (e is + when Dr)
+    if(type==="X") return {dA:0,  dL:0,  dQ:-e};  // drawings ↓ capital
+    return {dA:0,dL:0,dQ:0};
+  }
+
+  // --- 5. Journal entry validator ----------------------------
+  // entry: { dr:[{a,amt}], cr:[{a,amt}], label }
+  function validate(entry){
+    const errs=[];
+    const dr=entry.dr||[], cr=entry.cr||[];
+    if(!dr.length) errs.push("At least one Debit account required.");
+    if(!cr.length) errs.push("At least one Credit account required.");
+    const sDr = dr.reduce((s,x)=>s+(+x.amt||0),0);
+    const sCr = cr.reduce((s,x)=>s+(+x.amt||0),0);
+    if(sDr<=0||sCr<=0) errs.push("Amounts must be positive.");
+    if(Math.abs(sDr-sCr)>0.005) errs.push(`Dual aspect broken: Dr ₹${sDr.toLocaleString("en-IN")} ≠ Cr ₹${sCr.toLocaleString("en-IN")}.`);
+    // equation impact
+    let dA=0,dL=0,dQ=0;
+    dr.forEach(x=>{ const d=eqDelta(classify(x.a),"Dr",+x.amt||0); dA+=d.dA;dL+=d.dL;dQ+=d.dQ; });
+    cr.forEach(x=>{ const d=eqDelta(classify(x.a),"Cr",+x.amt||0); dA+=d.dA;dL+=d.dL;dQ+=d.dQ; });
+    const eqOk = Math.abs(dA - (dL+dQ)) < 0.005;
+    if(!eqOk) errs.push(`Equation broken: ΔA ${dA} ≠ ΔL ${dL} + ΔC ${dQ}.`);
+    return {ok:errs.length===0, errors:errs, sumDr:sDr, sumCr:sCr, delta:{dA,dL,dQ}, eqOk};
+  }
+
+  // --- 6. Human explanation ----------------------------------
+  function explain(name, side){
+    const t=classify(name), nat=naturalSide(t);
+    const inc = side===nat ? "increases" : "decreases";
+    const typeName = {A:"Asset",L:"Liability",Q:"Capital",E:"Expense",R:"Revenue",X:"Drawings"}[t];
+    return `${name} is a ${typeName}. Natural balance: ${nat}. Posting on ${side} → ${inc}.`;
+  }
+
+  window.AcctEngine = {
+    TYPES:T, classify, naturalSide, effect, eqDelta, validate, explain,
+    isAsset:n=>classify(n)==="A", isLiab:n=>classify(n)==="L",
+    isCapital:n=>classify(n)==="Q", isExpense:n=>classify(n)==="E",
+    isRevenue:n=>classify(n)==="R", isDrawings:n=>classify(n)==="X"
+  };
+
+  /* ---------- ROUTE EXISTING MODULES THROUGH THE ENGINE ----------
+     Patch ACC_TYPE used by Simulator (m7) and wrap simPost so every
+     transaction is validated. Equation-Equalizer (m1) TPL also routes
+     its labels via engine for consistent wording. */
+  if(typeof ACC_TYPE!=="undefined"){
+    // upgrade ACC_TYPE to use engine.classify (proxy fallback)
+    const proxy = new Proxy(ACC_TYPE,{
+      get(o,k){
+        if(k in o) return o[k];
+        const t = classify(String(k));
+        return t==="X" ? "Q" : t;     // simulator's ledger only knows A/L/Q/E/R
+      }
+    });
+    try{ window.ACC_TYPE = proxy; }catch(_){}
+  }
+
+  if(typeof simPost==="function"){
+    const _simPost = simPost;
+    window.simPost = function(label, dr, cr){
+      const v = AcctEngine.validate({label, dr, cr});
+      if(!v.ok){
+        console.warn("[AcctEngine] Entry rejected:", v.errors);
+        if(typeof toast==="function") toast("⚠ "+v.errors[0], "bad");
+        if(typeof sfx!=="undefined" && sfx.bad) sfx.bad();
+        return false;
+      }
+
+      // Check for negative physical balances
+      let negativeErr = "";
+      if (typeof SIM !== "undefined" && SIM.ledger) {
+        const testLedger = {};
+        for(let acct in SIM.ledger) { testLedger[acct] = SIM.ledger[acct].bal; }
+        
+        function testApply(name, type, amt, side){
+          if(testLedger[name] === undefined) testLedger[name] = 0;
+          const sign = (type==="A"||type==="E"||type==="X") ? (side==="dr"?1:-1) : (side==="cr"?1:-1);
+          testLedger[name] += sign*amt;
+          if (testLedger[name] < 0 && (type==="A" || type==="L")) {
+            negativeErr = `Transaction would cause ${name} to have a negative balance.`;
+          }
+        }
+        
+        dr.forEach(x=>testApply(x.a, AcctEngine.classify(x.a), x.amt, "dr"));
+        if (!negativeErr) cr.forEach(x=>testApply(x.a, AcctEngine.classify(x.a), x.amt, "cr"));
+      }
+      
+      if(negativeErr) {
+        if(typeof toast==="function") toast("⚠ "+negativeErr, "bad");
+        if(typeof sfx!=="undefined" && sfx.bad) sfx.bad();
+        return false;
+      }
+
+      return _simPost(label, dr, cr);
+    };
+  }
+
+  // expose a friendly badge on the live sync pill when engine validates
+  console.info("%c⚙ AcctEngine online — A=C+L enforced","color:#7fffd4;font-weight:600");
+})();
+
+</script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a07f716968717ea9',t:'MTc4MDgzMzA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a07fe29b69e26d2f',t:'MTc4MDgzNzcwMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
