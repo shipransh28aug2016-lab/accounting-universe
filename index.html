@@ -2043,13 +2043,13 @@ const MODS = [
   ["m7"," Simulator","Run a business day. Journal → Ledger → Balance Sheet."],
   ["m8"," What Happens If...","Sliders that bend assets, liabilities & capital."],
   ["m9"," Memory Hack Zone","A mnemonic map your brain can't unsee."],
-  ["m10"," Cheat Sheet","Every rule in one single screen."],
-  ["m11"," Trial Balance","Drag and drop accounts to test Debit/Credit mastery."],
+  ["m10"," Cash Book Lab","Post transactions into a Single or Double column Cash Book."],
+  ["m11"," Trial Balance Builder","Classify random ledger balances as Dr or Cr until it tallies."],
   ["m12"," Final Accounts","Drag items into Trading, P&L and Balance Sheet."],
-  ["m13"," Dr/Cr Balances","Every account's natural side — flip cards & quiz."],
-  ["m14"," Source Documents","Match transactions to correct vouchers & invoices."],
-  ["m15"," Rectification of Errors","Fix incorrect entries with reversing journals."],
-  ["m16"," Virtual Case Simulator","Roleplay as a Junior Consultant in dynamic scenarios."]
+  ["m13"," Source Documents","Match transactions to correct vouchers & invoices."],
+  ["m14"," Rectification of Errors","Fix incorrect entries with reversing journals."],
+  ["m15"," Virtual Client Simulator","Roleplay as a Junior Consultant advising real client scenarios."],
+  ["m16"," Tally Simulator","Create a company and post vouchers into a computerised ledger."]
 ];
 const mg = $("#moduleGrid");
 MODS.forEach(([id,t,d],i)=>{
@@ -4234,6 +4234,9 @@ const FA_ITEMS = [
     {n:"Bills Payable",      amt:15000,  h:"bs-lia"},
     {n:"Capital",            amt:250000, h:"bs-lia"}
   ];
+// Pristine snapshot — the Boss Fight (applyFaBossImpact) mutates FA_ITEMS in place, so a plain
+// re-shuffle on Reset would keep those stale amounts/rows forever. faReset restores from this.
+const FA_ITEMS_BASE = FA_ITEMS.map(i=>({...i}));
 const FA = {ok:0,bad:0};
 function faInit(){
   FA.ok=0; FA.bad=0; updateFAHud();
@@ -4357,7 +4360,16 @@ function faPrepare(){
     }
   }
 }
-$("#faReset").onclick=()=>{faInit(); sfx.tap()};
+$("#faReset").onclick=()=>{
+  // Restore the original item set — a completed Boss Fight leaves FA_ITEMS permanently mutated
+  // (merged/added adjustment rows), so resetting without this would reshuffle stale data forever.
+  FA_ITEMS.length = 0;
+  FA_ITEMS.push(...FA_ITEMS_BASE.map(i=>({...i})));
+  window.faBossActive = false;
+  window.faBossDefeated = false;
+  faInit();
+  sfx.tap();
+};
 $("#faPrepare").onclick=()=>{faPrepare(); sfx.good();};
 faInit();
 
@@ -4723,7 +4735,11 @@ document.addEventListener("keydown",e=>{
     Advertisement:"E", Insurance:"E", "Carriage Inwards":"E",
     "Carriage Outwards":"E", Freight:"E", Depreciation:"E",
     "Discount Allowed":"E", Interest:"E", "Interest Paid":"E", "Bad Debts":"E",
-    Commission:"E"
+    Commission:"E",
+    // Depreciation lines named after the asset (e.g. "Depr. Machinery") must stay Expenses —
+    // without an exact-match entry they'd fall through to the regex below and get misread as
+    // Assets just because "Machinery"/"Furniture" appears in the name.
+    "Depr. Machinery":"E", "Depr. Furniture":"E"
   };
   function classify(name){
     if(T[name]) return T[name];
@@ -6209,7 +6225,7 @@ const FA_ADJUSTMENTS = [
     },
     {
         desc: "Prepaid Insurance Premium for next year.",
-        ans1: { target: "pl-dr", amt: -1000 }, // Reduces expense
+        ans1: { target: "pl-dr", amt: -1000, acc: "Insurance Premium" }, // Reduces expense
         ans2: { target: "bs-ast-plus", amt: 1000, acc: "Prepaid Insurance" }
     }
 ];
@@ -6313,15 +6329,32 @@ function faBossResolve() {
 function applyFaBossImpact(ans) {
     if (ans.target === "trad-dr" || ans.target === "trad-cr" || ans.target === "pl-dr" || ans.target === "pl-cr") {
         if (ans.amt < 0) {
-            // Find existing to reduce
-            let existing = FA_ITEMS.find(i => i.h === ans.target);
-            if(existing) existing.amt += ans.amt; 
+            // Reduce the specifically named line when we have one; otherwise fall back to the
+            // first line in that column. (Previously this always grabbed the first line regardless
+            // of `acc`, so e.g. a Prepaid Insurance adjustment could wrongly shrink the Salary line
+            // instead of the Insurance Premium line it actually describes.)
+            let existing = ans.acc
+                ? FA_ITEMS.find(i => i.h === ans.target && i.n === ans.acc)
+                : FA_ITEMS.find(i => i.h === ans.target);
+            if(existing) existing.amt += ans.amt;
         } else {
-            FA_ITEMS.push({ n: ans.acc || "Adjustment", amt: ans.amt, h: ans.target });
+            // Merge into an existing same-named line instead of duplicating it — e.g. "Closing
+            // Stock" already exists in Trading Cr. Pushing a second row would double the figure,
+            // and the Balance Sheet's Closing Stock lookup (which reads only the first match)
+            // would go stale and no longer tie out with the Trading account.
+            let existing = ans.acc ? FA_ITEMS.find(i => i.h === ans.target && i.n === ans.acc) : null;
+            if (existing) existing.amt += ans.amt;
+            else FA_ITEMS.push({ n: ans.acc || "Adjustment", amt: ans.amt, h: ans.target });
         }
     } else if (ans.target === "bs-ast-plus" || ans.target === "bs-lia-plus") {
+        // Closing Stock's Balance Sheet asset row is derived automatically from the Trading
+        // account's Closing Stock figure (see faPrepare) — don't also add a separate BS row for
+        // it here, or the asset side would double-count it against the Trading-side change above.
+        if (ans.acc === "Closing Stock") return;
         let h = ans.target.includes("ast") ? "bs-ast" : "bs-lia";
-        FA_ITEMS.push({ n: ans.acc || "Adjustment", amt: ans.amt, h: h });
+        let existing = ans.acc ? FA_ITEMS.find(i => i.h === h && i.n === ans.acc) : null;
+        if (existing) existing.amt += ans.amt;
+        else FA_ITEMS.push({ n: ans.acc || "Adjustment", amt: ans.amt, h: h });
     } else if (ans.target === "bs-ast-minus" || ans.target === "bs-lia-minus") {
         let h = ans.target.includes("ast") ? "bs-ast" : "bs-lia";
         let existing = FA_ITEMS.find(i => i.h === h && i.n === ans.acc);
