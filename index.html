@@ -806,6 +806,8 @@ select, option {
               <option value="drawings">Owner withdraws cash (drawings)</option>
             </select>
             <input class="input" type="number" id="txAmt" min="100" step="100" placeholder="Amount (₹)" value="10000"/>
+            <input class="input" type="number" id="txCost" min="100" step="100" placeholder="Cost of Goods Sold (₹)" style="display:none;margin-top:8px"/>
+            <p class="note" id="txCostNote" style="display:none">Sale Value − Cost = Profit. Stock is reduced by <b>Cost</b>, not the Sale Value.</p>
             <button class="btn" id="txApply">⚡ Apply Transaction</button>
             <button class="btn ghost" id="txReset">↺ Reset Universe</button>
             <div class="tx-log" id="txLog"></div>
@@ -2287,10 +2289,10 @@ const TPL = [
    fn:(n)=>{ M1_ACCTS.Bank+=n; M1_ACCTS.Cash-=n; }},
   {id:"bank-withdraw", label:"6. Cash withdrawn from bank", desc:"Cash ↑, Bank ↓ (asset swap)",
    fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS.Bank-=n; }},
-  {id:"cash-sale", label:"7. Cash sale of goods", desc:"Cash ↑, P&L Profit ↑ (Revenue swells Capital)",
-   fn:(n)=>{ M1_ACCTS.Cash+=n; M1_ACCTS["P&L Profit"]+=n; }},
-  {id:"credit-sale", label:"8. Credit sale to Mohan", desc:"Debtors ↑, P&L Profit ↑",
-   fn:(n)=>{ M1_ACCTS.Debtors+=n; M1_ACCTS["P&L Profit"]+=n; }},
+  {id:"cash-sale", label:"7. Cash sale of goods", desc:"Cash ↑ (Sale Value), Stock ↓ (Cost), P&L Profit ↑ (Margin only)", needsCost:true,
+   fn:(n,cost)=>{ M1_ACCTS.Cash+=n; M1_ACCTS.Stock-=cost; M1_ACCTS["P&L Profit"]+=(n-cost); }},
+  {id:"credit-sale", label:"8. Credit sale to Mohan", desc:"Debtors ↑ (Sale Value), Stock ↓ (Cost), P&L Profit ↑ (Margin only)", needsCost:true,
+   fn:(n,cost)=>{ M1_ACCTS.Debtors+=n; M1_ACCTS.Stock-=cost; M1_ACCTS["P&L Profit"]+=(n-cost); }},
   {id:"cash-purchase", label:"9. Cash purchase of goods (stock)", desc:"Stock ↑, Cash ↓ (asset swap)",
    fn:(n)=>{ M1_ACCTS.Stock+=n; M1_ACCTS.Cash-=n; }},
   {id:"credit-purchase", label:"10. Credit purchase (goods on credit)", desc:"Stock ↑, Creditors ↑",
@@ -2380,11 +2382,31 @@ const TPL = [
 const sel = $("#txTemplate");
 sel.innerHTML = TPL.map(t=>`<option value="${t.id}">${t.label}</option>`).join("");
 
+// Show/hide the Cost of Goods Sold field for transactions where goods are sold —
+// Sale Value alone isn't enough: Stock must drop by Cost, and only the margin (Sale − Cost) is profit.
+function m1SyncCostField(){
+  const tpl = TPL.find(t=>t.id===$("#txTemplate").value);
+  const show = !!(tpl && tpl.needsCost);
+  $("#txCost").style.display = show ? "" : "none";
+  $("#txCostNote").style.display = show ? "" : "none";
+}
+sel.addEventListener("change", m1SyncCostField);
+m1SyncCostField();
+
 $("#txApply").onclick=()=>{
   const k=$("#txTemplate").value, n=+($("#txAmt").value||0);
   if(!n||n<=0){toast("Enter an amount","bad");sfx.bad();return}
   const tpl = TPL.find(t=>t.id===k);
   if(!tpl) return;
+
+  // Goods-sold transactions need an explicit Cost of Goods Sold —
+  // Stock must be reduced by Cost, and P&L Profit must rise by the margin, not the full sale value.
+  let cost = n;
+  if (tpl.needsCost) {
+    cost = +($("#txCost").value||0);
+    if(!cost || cost<=0){ toast("Enter the Cost of Goods Sold","bad"); sfx.bad(); return; }
+    if(cost > n){ toast("Cost cannot exceed the Sale Value","bad"); sfx.bad(); return; }
+  }
 
   // 1. Pre-Transaction Validation: save current state for simulation/rollback
   const backup = {};
@@ -2393,7 +2415,7 @@ $("#txApply").onclick=()=>{
   }
 
   // Simulate/Apply transaction temporarily
-  tpl.fn(n);
+  tpl.fn(n, cost);
 
   // 2 & 3. Validate guardrails (block negative physical assets and liabilities)
   let isInvalid = false;
@@ -2413,17 +2435,24 @@ $("#txApply").onclick=()=>{
     }
     sfx.bad();
     toast("Transaction blocked", "bad");
-    alert(`⚠️ Invalid Transaction: Insufficient balance in ${invalidReason}. Account cannot be negative.`);
+    const msg = (tpl.needsCost && invalidReason==="Stock")
+      ? `⚠️ Invalid Transaction: Not enough Stock to cover a Cost of ${fmt(cost)}. Stock cannot go negative.`
+      : `⚠️ Invalid Transaction: Insufficient balance in ${invalidReason}. Account cannot be negative.`;
+    alert(msg);
     return;
   }
 
   // Transaction is valid, proceed
-  M1.log.push({label:tpl.label, detail:tpl.desc + "  Amount: " + fmt(n)});
+  const detail = tpl.needsCost
+    ? `${tpl.desc}  Sale: ${fmt(n)} · Cost: ${fmt(cost)} · Profit: ${fmt(n-cost)}`
+    : tpl.desc + "  Amount: " + fmt(n);
+  M1.log.push({label:tpl.label, detail});
   sfx.pop(); m1Render(); awardXP(8,"Transaction applied");
 };
 $("#txReset").onclick=()=>{
   Object.keys(M1_ACCTS).forEach(k=>M1_ACCTS[k]=0);
   M1.log=[]; m1Render(); sfx.tap();
+  $("#txCost").value = "";
 };
 
 /* ============ DRAG HELPER (pointer-based, works touch+mouse) ============ */
