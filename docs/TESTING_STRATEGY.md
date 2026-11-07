@@ -7,7 +7,8 @@
 | Engine unit + property tests | Vitest | `packages/engine/test` | Money exactness, validation, ledger, reversal, TB, equation |
 | Type safety | `tsc --noEmit` (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`) | engine | Misuse of the API |
 | Legacy regression / smoke | Playwright (Chromium) | `e2e/*.cjs` | The shipped single-file app: loads clean, 20 screens open, accounting fixes stay fixed |
-| (planned) Lab-level browser flows | Playwright | `e2e/` | Each new lab end-to-end |
+| Curriculum / practice / progress | Vitest | `packages/curriculum/test` | Syllabus totals, 1,500 seeds per generator, mastery model, teacher report, lab registry vs syllabus |
+| Web app browser flows | Playwright (desktop + 390px mobile) | `e2e/web-app.cjs` | Every lab (example, try-it, blank, garbage input, reset), ledger play/step/reverse, practice round-trip, progress export → teacher import, offline, no console errors, label/heading/alt checks |
 | (planned) Accessibility / offline / perf | axe, service-worker tests, Lighthouse | Phase 8 | Directive Part 13 |
 
 ## Rules we hold ourselves to
@@ -25,21 +26,27 @@
    every post; reversing all 300 returns every account to exactly zero.
 5. **No float in money paths** — enforced by a source-scanning guard test.
 
-## Current results (run locally 2026-11-06)
+## Current results (run locally 2026-11-07)
 
-* Engine: `npm run check` in `packages/engine` → typecheck clean, **63 tests passed** (3 files).
+* Engine: **184 tests** passed (8 files); mutation check **25/25** mutants killed (`packages/engine/test/mutation-check.py`).
+* Curriculum: **185 tests** passed (4 files); typecheck clean.
+* Web app: `tsc` clean, build OK, `e2e/web-app.cjs` **175/175** checks.
 * Legacy: `e2e/legacy-simulator-regression.cjs` 14/14; `e2e/legacy-smoke.cjs` 12/12.
 
 ## Running
 
 ```
 cd packages/engine && npm install && npm run check
+(cd packages/curriculum && npx vitest run)
+(cd apps/web && npm install && npm run build) && NODE_PATH="$(npm root -g)" node e2e/web-app.cjs
 NODE_PATH="$(npm root -g)" node e2e/legacy-smoke.cjs                  # needs playwright + chromium
 NODE_PATH="$(npm root -g)" node e2e/legacy-simulator-regression.cjs
 ```
 
 ## Known gaps
 
-No CI yet (a GitHub Actions workflow needs a token with `workflow` scope — owner decision). No coverage
-measurement. No tests for any Phase 2+ lab because none exist yet. `docs/ACCOUNTING_VALIDATION_REPORT.md`
-is created when the first syllabus-bound lab ships.
+No CI yet (a workflow needs a token with `workflow` scope — owner decision). No coverage measurement. Accessibility is
+checked by hand-written DOM assertions (labels, headings, names, keyboard tabs), **not** by axe or a screen reader, and
+colour contrast was designed to WCAG AA but not measured by a tool. No performance (Lighthouse) run. Browser tests ran in
+Chromium only. The lab **result values** are verified at engine level; the browser tests check that results render, not
+every number. The legacy `index.html` has no engine-backed tests beyond the two e2e scripts.
