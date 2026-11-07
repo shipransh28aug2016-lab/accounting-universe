@@ -2,6 +2,10 @@ import { CLAUSES, mistakeTally, SKILLS } from '../../../../packages/curriculum/s
 import { h, mount } from '../dom';
 import { ALL_LABS, LEDGER_LAB } from '../labs';
 import { attempts } from '../store';
+import { blocksToFacts } from '../facts';
+import { runLabFacts } from './lab';
+import { state } from '../state';
+import { loading } from '../ui';
 
 interface Gloss { term: string; en: string; hi: string }
 // Short bilingual rule cards. These are hand-written reminders, NOT a translation of the course.
@@ -31,6 +35,29 @@ export function search(q: string): Doc[] {
     .filter(x => x.s > 0).sort((a, b) => b.s - a.s || a.d.title.localeCompare(b.d.title)).slice(0, 6).map(x => x.d);
 }
 
+const TUTOR_URL: string = (import.meta.env.VITE_TUTOR_URL as string | undefined) ?? '';
+
+function aiPanel(): HTMLElement {
+  const labSel = h('select', { id: 'ailab' }, ...ALL_LABS.map(l => h('option', { value: l.id }, `Class ${l.cls} · ${l.title}`)));
+  const mode = h('select', { id: 'aimode' }, h('option', { value: 'hint' }, 'Give me a hint (no answer)'), h('option', { value: 'explain' }, 'Explain the worked example'));
+  const q = h('textarea', { id: 'aiq', rows: 3, maxlength: 500, placeholder: 'What are you stuck on?' });
+  const out = h('div', { 'aria-live': 'polite' });
+  const ask = async () => {
+    const lab = ALL_LABS.find(l => l.id === labSel.value)!;
+    if (!q.value.trim()) { mount(out, h('p', { class: 'note warn', role: 'alert' }, 'Type your question first.')); return; }
+    mount(out, loading('Thinking…'));
+    try {
+      const facts = blocksToFacts(runLabFacts(lab));
+      const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 20000);
+      const r = await fetch(TUTOR_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, signal: ctl.signal, body: JSON.stringify({ question: q.value.trim(), facts, chapter: lab.title, mode: mode.value, lang: state.lang }) });
+      clearTimeout(t);
+      const j = (await r.json()) as { text?: string; error?: string; withheld?: boolean };
+      mount(out, j.text ? h('div', { class: 'note ' + (j.withheld ? 'warn' : 'info') }, j.text) : h('p', { class: 'note warn', role: 'alert' }, (j.error ?? 'The tutor could not answer.') + ' You can still use the search and rule cards below.'));
+    } catch { mount(out, h('p', { class: 'note warn', role: 'alert' }, 'The tutor is not reachable (you may be offline). The search and rule cards below still work.')); }
+  };
+  return h('section', { class: 'panel' }, h('h3', {}, 'Ask the AI tutor'), h('div', { class: 'field' }, h('label', { for: 'ailab' }, 'About which lab?'), labSel), h('div', { class: 'field' }, h('label', { for: 'aimode' }, 'What do you want?'), mode), h('div', { class: 'field' }, h('label', { for: 'aiq' }, 'Your question'), q), h('button', { type: 'button', class: 'primary', onclick: () => { void ask(); } }, 'Ask'), out);
+}
+
 export function tutorPage(): HTMLElement {
   const results = h('div', { 'aria-live': 'polite' });
   const gloss = h('div', {});
@@ -50,7 +77,9 @@ export function tutorPage(): HTMLElement {
   void SKILLS;
   return h('div', { class: 'tutor' },
     h('header', { class: 'labhead' }, h('p', { class: 'eyebrow' }, 'AI tutor'), h('h2', {}, 'Find help, fast'),
-      h('p', { class: 'note info' }, 'Honest status: no AI language model is connected yet. A real tutor needs a small server to keep its API key secret (see docs/IMPLEMENTATION_ROADMAP.md, decision D4). Until then this page is an offline helper: it finds the right lab and explains your repeated mistakes. It never calculates your numbers — the accounting engine does.')),
+      TUTOR_URL ? h('p', { class: 'note info' }, 'An AI tutor is connected through a server. It only explains figures the accounting engine has already worked out; it never calculates and cannot see your name or progress. The search and rule cards below work without it.')
+        : h('p', { class: 'note info' }, 'No AI language model is connected in this build. The server code is ready (apps/tutor-proxy) but needs an API key and a deployed address (see docs/IMPLEMENTATION_ROADMAP.md, decision D4). Until then this page is an offline helper: it finds the right lab and explains your repeated mistakes. It never calculates your numbers — the accounting engine does.')),
+    TUTOR_URL ? aiPanel() : null,
     h('section', { class: 'panel' }, h('h3', {}, 'Search the course'), h('form', { class: 'searchrow', onsubmit: (e: Event) => { e.preventDefault(); ask(); } }, h('label', { for: 'tq', class: 'sr-only' }, 'Search the course'), input, h('button', { type: 'submit', class: 'primary' }, 'Search')), results),
     h('section', { class: 'panel' }, h('h3', {}, 'Your repeated mistakes'), mist),
     h('section', { class: 'panel' }, h('h3', {}, 'Key rules in plain words'),

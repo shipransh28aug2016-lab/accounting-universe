@@ -9,9 +9,10 @@ export type { Attempt, Export, Profile, Seen };
 export type StorageMode = 'indexeddb' | 'memory';
 export let storageMode: StorageMode = 'memory';
 
-const DB = 'accounting-universe', VER = 1;
+const DB = 'accounting-universe', VER = 2;
+const STORES = ['attempts', 'seen', 'profile', 'assignments', 'projects'];
 let dbp: Promise<IDBDatabase | null> | null = null;
-const mem: Record<string, unknown[]> = { attempts: [], seen: [], profile: [] };
+const mem: Record<string, unknown[]> = { attempts: [], seen: [], profile: [], assignments: [], projects: [] };
 
 function open(): Promise<IDBDatabase | null> {
   if (dbp) return dbp;
@@ -19,7 +20,7 @@ function open(): Promise<IDBDatabase | null> {
     try {
       if (typeof indexedDB === 'undefined') return resolve(null);
       const req = indexedDB.open(DB, VER);
-      req.onupgradeneeded = () => { const d = req.result; for (const s of ['attempts', 'seen', 'profile']) if (!d.objectStoreNames.contains(s)) d.createObjectStore(s, { autoIncrement: true }); };
+      req.onupgradeneeded = () => { const d = req.result; for (const s of STORES) if (!d.objectStoreNames.contains(s)) d.createObjectStore(s, { autoIncrement: true }); };
       req.onsuccess = () => { storageMode = 'indexeddb'; resolve(req.result); };
       req.onerror = () => resolve(null);
       req.onblocked = () => resolve(null);
@@ -51,7 +52,13 @@ export const attempts = () => all<Attempt>('attempts');
 export const seen = () => all<Seen>('seen');
 export async function getProfile(): Promise<Profile | null> { const p = await all<Profile>('profile'); return p.length ? p[p.length - 1]! : null; }
 export async function setProfile(p: Profile) { await clearStore('profile'); await add('profile', p); }
-export async function resetAll() { for (const s of ['attempts', 'seen', 'profile']) await clearStore(s); }
+export async function resetAll() { for (const s of STORES) await clearStore(s); }
+
+// Assignments handed over by a teacher (files), and the student's own project notes. Both stay on this device.
+export const saveAssignment = async (a: unknown & { id: string }) => { const cur = await assignmentsAll(); if (cur.some(x => x.id === a.id)) return false; await add('assignments', a); return true; };
+export const assignmentsAll = () => all<{ id: string }>('assignments');
+export async function getProject(key: string): Promise<Record<string, unknown> | null> { const p = await all<{ key: string; data: Record<string, unknown> }>('projects'); const hit = [...p].reverse().find(x => x.key === key); return hit ? hit.data : null; }
+export async function setProject(key: string, data: Record<string, unknown>) { const keep = (await all<{ key: string; data: Record<string, unknown> }>('projects')).filter(x => x.key !== key); await clearStore('projects'); for (const x of keep) await add('projects', x); await add('projects', { key, data }); }
 export const ready = async () => { await open(); return storageMode; };
 
 export async function exportAll(): Promise<Export> { return { app: 'accounting-universe', version: 1, exportedAt: Date.now(), profile: await getProfile(), attempts: await attempts(), seen: await seen() }; }

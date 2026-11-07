@@ -114,3 +114,23 @@ export function reportToCsv(r: ClassReport): string {
   const rows = [['clause', 'students_attempted', 'accuracy_percent', 'students_struggling', 'most_common_mistake'], ...r.clauses.map(c => [c.clause, c.students, c.accuracy === null ? null : Math.round(c.accuracy * 100), c.strugglingStudents, c.topMistake])];
   return rows.map(row => row.map(esc).join(',')).join('\n');
 }
+
+// ───────────── teacher: error heat-map and remedial suggestions ─────────────
+
+export interface Heatmap { readonly students: string[]; readonly clauses: string[]; readonly cells: (number | null)[][]; }
+/** accuracy 0..1 per student × topic (null = not attempted). Only topics someone attempted are listed. */
+export function heatmap(files: readonly { file: string; data: unknown }[]): Heatmap {
+  const good: { name: string; e: Export }[] = [];
+  for (const f of files) { const p = parseExport(f.data); if (p.ok) good.push({ name: p.value.profile?.name?.trim() || f.file.replace(/\.json$/i, ''), e: p.value }); }
+  const clauses = CLAUSES.map(c => c.id).filter(id => good.some(g => g.e.attempts.some(a => a.clause === id)));
+  const cells = good.map(g => clauses.map(id => { const a = g.e.attempts.filter(x => x.clause === id); return a.length ? pct(a) : null; }));
+  return { students: good.map(g => g.name), clauses, cells };
+}
+
+export interface Remedial { readonly clause: string; readonly reason: string; readonly labs: readonly string[]; readonly skill: string | null; }
+/** Topics where students are stuck, with where to send them. Strugglers first, then lowest class accuracy. */
+export function remedial(r: ClassReport, labsOfClause: (c: string) => readonly string[]): Remedial[] {
+  return r.clauses.filter(c => c.strugglingStudents > 0 || (c.accuracy !== null && c.accuracy < 0.6))
+    .sort((a, b) => b.strugglingStudents - a.strugglingStudents || (a.accuracy ?? 1) - (b.accuracy ?? 1) || a.clause.localeCompare(b.clause))
+    .map(c => ({ clause: c.clause, reason: `${c.strugglingStudents} of ${c.students} student${c.students === 1 ? '' : 's'} struggling${c.accuracy !== null ? `, class accuracy ${Math.round(c.accuracy * 100)}%` : ''}${c.topMistake ? `; most common mistake: ${c.topMistake}` : ''}`, labs: labsOfClause(c.clause), skill: SKILLS.find(s => s.clause === c.clause)?.skill ?? null }));
+}

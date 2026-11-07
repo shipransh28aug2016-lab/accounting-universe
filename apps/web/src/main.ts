@@ -12,13 +12,20 @@ import { practicePage } from './pages/practice';
 import { progressPage } from './pages/progress';
 import { teacherPage } from './pages/teacher';
 import { tutorPage } from './pages/tutor';
+import { cardPage, cardsIndex } from './pages/cards';
+import { trainerPage } from './pages/trainer';
+import { casPage } from './pages/cas';
+import { projectPage } from './pages/project';
+import { rescuePage } from './pages/rescue';
+import { assignmentPage } from './pages/assignment';
+import { CARDS } from '../../../packages/curriculum/src';
 
 const NAV: { label: string; hash: string; match: (p: string[]) => boolean }[] = [
   { label: 'HOME', hash: '#/', match: p => p.length === 0 },
   { label: 'CLASS XI', hash: '#/class/XI', match: p => p[0] === 'class' && p[1] === 'XI' },
   { label: 'CLASS XII', hash: '#/class/XII', match: p => p[0] === 'class' && p[1] === 'XII' },
-  { label: 'VISUAL LABS', hash: '#/labs', match: p => p[0] === 'labs' || p[0] === 'lab' || p[0] === 'ledger' },
-  { label: 'PRACTICE', hash: '#/practice', match: p => p[0] === 'practice' },
+  { label: 'VISUAL LABS', hash: '#/labs', match: p => ['labs', 'lab', 'ledger', 'trainer', 'cas', 'cards', 'project'].includes(p[0] ?? '') },
+  { label: 'PRACTICE', hash: '#/practice', match: p => ['practice', 'assignment', 'rescue'].includes(p[0] ?? '') },
   { label: 'AI TUTOR', hash: '#/tutor', match: p => p[0] === 'tutor' },
   { label: 'MY PROGRESS', hash: '#/progress', match: p => p[0] === 'progress' },
   { label: 'TEACHER DASHBOARD', hash: '#/teacher', match: p => p[0] === 'teacher' },
@@ -45,7 +52,13 @@ function render() {
     else if (path[0] === 'labs') page = labsIndex();
     else if (path[0] === 'lab' && path[1] && labById(path[1])) page = labPage(labById(path[1])!);
     else if (path[0] === 'ledger') page = ledgerPage();
-    else if (path[0] === 'practice') page = practicePage(path[1], path[2]);
+    else if (path[0] === 'practice') page = practicePage(path[1], path[2], path[3]);
+    else if (path[0] === 'cards') page = path[1] && CARDS.some(c => c.id === path[1]) ? cardPage(CARDS.find(c => c.id === path[1])!) : cardsIndex();
+    else if (path[0] === 'trainer') page = trainerPage();
+    else if (path[0] === 'cas') page = casPage();
+    else if (path[0] === 'project') page = projectPage(path[1] === 'XII' ? 'XII' : 'XI', state.profile.route);
+    else if (path[0] === 'rescue') page = rescuePage(path[1]);
+    else if (path[0] === 'assignment' && path[1]) page = assignmentPage(path[1]);
     else if (path[0] === 'tutor') page = tutorPage();
     else if (path[0] === 'progress') page = progressPage();
     else if (path[0] === 'teacher') page = teacherPage();

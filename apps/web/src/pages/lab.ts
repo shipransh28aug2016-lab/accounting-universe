@@ -47,7 +47,7 @@ export function labPage(lab: Lab, startTab: Tab = 'learn'): HTMLElement {
     const res = runLab(lab, lab.example);
     return h('div', {},
       h('h3', {}, 'The question'),
-      h('table', { class: 'data inputs' }, h('tbody', {}, ...lab.fields.map(f => h('tr', {}, h('th', { scope: 'row' }, f.label), h('td', {}, lab.example[f.id] ?? ''))))),
+      h('table', { class: 'data inputs' }, h('tbody', {}, ...lab.fields.map(f => h('tr', {}, h('th', { scope: 'row' }, f.label), h('td', {}, f.type === 'select' ? (f.options?.find(o => o.value === (lab.example[f.id] ?? ''))?.label ?? (lab.example[f.id] ?? '')) : (lab.example[f.id] ?? '')))))),
       h('h3', {}, 'Step by step'), h('ol', { class: 'walk' }, ...lab.walkthrough.map(s => h('li', {}, s))),
       h('h3', {}, 'The result'), res.node,
       h('div', { class: 'actions' }, h('button', { type: 'button', class: 'primary', onclick: () => select('try') }, 'Now try your own numbers →')));
@@ -96,3 +96,6 @@ export function labPage(lab: Lab, startTab: Tab = 'learn'): HTMLElement {
   void current;
   return root;
 }
+
+/** Engine output of a lab's worked example, for the tutor's "facts". Never throws. */
+export function runLabFacts(lab: Lab) { try { return lab.compute({ ...lab.example }); } catch { return []; } }

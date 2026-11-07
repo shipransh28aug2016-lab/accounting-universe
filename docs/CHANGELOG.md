@@ -25,7 +25,28 @@
   ran on zeros. Types now come from `AcctEngine.classify`; pre-fix sessions are rebuilt from the journal;
   the M1 mirror no longer leaves stale balances.
 
-### Found and fixed while debugging the new app
+### Completion pass (all syllabus topics now have a lab, a page or a concept card)
+- Engine v0.3 (`extras.ts`, 209 tests, 10/10 mutants killed): calls in advance, two-column cash book, subsidiary books with
+  GST, provision for doubtful debts / discount, reserve transfer, opening entry, exact loan/EMI schedule, Schedule III totals,
+  fixed vs fluctuating capital, revaluation, Partnership Act 1932 default rules.
+- Curriculum: 15 bilingual concept cards (English + Hinglish) with self-checks for every theory-only topic; 6 more practice
+  skills (30 total); rescue plan; assignments / chapter tests as shareable files; teacher heat-map and remedial list.
+- Web: 14 new labs (equation visualiser, cash book, subsidiary books, provisions & reserves, opening entry, partnership
+  fundamentals, fixed vs fluctuating capital, revaluation, calls in advance, shares for non-cash consideration,
+  Schedule III statements, spreadsheet lab …); Debit & Credit Trainer; Computerised Accounting Simulator (codification,
+  validated vouchers, maker–checker, roles, closing / opening entries, backup & restore, persistence); Class XI and XII
+  project assistants; rescue plan pages; assignment import; loading states; coverage figures now split interactive /
+  cards-only / not built.
+- `apps/tutor-proxy`: server-side AI tutor proxy with output guard (replies containing figures not supplied by the engine
+  are withheld), cost limits and tests against a mock upstream. NOT tested against the live API; not deployed.
+- `docs/ci/github-actions.example.yml`, `tools/check-all.sh`, `e2e/web-app-extra.cjs`.
+
+### Found and fixed while completing it
+- CAS "Restore backup" input was removed from the page by the first redraw (file picker unusable).
+- Equation tanks always filled to 100% on both sides (no information) → now stacked segments showing composition; empty state added.
+- Worked-example question table showed raw codes (`BUY_ASSET`) and collapsed multi-line input; CAS voucher-type menu truncated.
+
+### Found and fixed while debugging the first app version
 - "Reset to example" left stale values in fields the example does not define.
 - Ledger, Practice pages had no page heading; tutor search box had no label (screen readers).
 - Reversal entries printed the credit line before the debit line.

@@ -10,3 +10,4 @@ export * from './classxi';
 export * from './finalAccounts';
 export * from './analysis';
 export * from './cashflow';
+export * from './extras';

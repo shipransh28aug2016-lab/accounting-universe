@@ -52,15 +52,18 @@ function ratioChart(b: Extract<Block, { kind: 'ratio' }>): HTMLElement {
 
 function equation(b: Extract<Block, { kind: 'equation' }>): HTMLElement {
   const total = (xs: { value: number }[]) => xs.reduce((a, x) => a + Math.max(0, x.value), 0);
+  if (total(b.assets) === 0 && total(b.rhs) === 0) return h('p', { class: 'eqempty' }, 'Nothing posted yet — assets and capital are both ₹0.');
   const max = Math.max(1, total(b.assets), total(b.rhs));
-  const col = (title: string, xs: { label: string; value: number; text: string }[], cls: string) => {
+  const col = (title: string, xs: { label: string; value: number; text: string }[]) => {
     const t = total(xs);
     return h('div', { class: 'eqcol' }, h('h4', {}, title),
-      h('div', { class: 'tank', style: 'height:180px' }, h('div', { class: 'tankfill ' + cls, style: `height:${Math.round((t / max) * 100)}%` })),
-      h('ul', { class: 'eqlist' }, ...xs.map(x => h('li', {}, h('span', {}, x.label), h('b', {}, x.text)))));
+      // the tank shows the COMPOSITION of this side: one coloured segment per item, sized by its share
+      h('div', { class: 'tank', role: 'img', 'aria-label': `${title}: ${xs.map(x => `${x.label} ${x.text}`).join(', ')}`, style: 'height:180px' },
+        ...xs.filter(x => x.value > 0).map((x, i) => h('div', { class: `tankseg s${i % 5}`, style: `height:${Math.round((x.value / Math.max(1, t)) * (t / max) * 1000) / 10}%` }))),
+      h('ul', { class: 'eqlist' }, ...xs.map((x, i) => h('li', {}, h('span', {}, h('span', { class: `swatch s${i % 5}`, 'aria-hidden': 'true' }), x.label), h('b', {}, x.text)))));
   };
   return h('figure', { class: 'figure equation', role: 'group', 'aria-label': b.balanced ? 'Assets equal capital plus liabilities' : 'Assets do not equal capital plus liabilities' },
-    col('Assets', b.assets, 'assets'), h('div', { class: 'eqsign' + (b.balanced ? ' ok' : ' bad'), 'aria-hidden': 'true' }, b.balanced ? '=' : '≠'), col('Capital + Liabilities', b.rhs, 'claims'));
+    col('Assets', b.assets), h('div', { class: 'eqsign' + (b.balanced ? ' ok' : ' bad'), 'aria-hidden': 'true' }, b.balanced ? '=' : '≠'), col('Capital + Liabilities', b.rhs));
 }
 
 function streams(b: Extract<Block, { kind: 'streams' }>): HTMLElement {

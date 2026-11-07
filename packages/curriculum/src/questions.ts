@@ -7,7 +7,7 @@ import {
   Fraction, Money, admission, appropriate, averageProfit, currentRatio, debtEquityRatio, depreciationSchedule, disposeAsset, dissolve, forfeit, goodwillAverageProfit,
   goodwillSuperProfit, interestPA, invoice, issueDebentures, issueShares, inventoryTurnoverRatio, pct, profitByStatementOfAffairs, quickRatio, ratioChange, reconcile,
   reissue, suspenseFromTrialBalance, allotmentPayable, allotmentPlan, exitSettlement, newSharesAfterExit, cashFlowStatement, interestCoverageRatio,
-  costOfRevenueFromOperations, goodwillOnRatioChange, type BrsKind,
+  costOfRevenueFromOperations, goodwillOnRatioChange, cashBook, provisionDoubtful, openingEntry, revaluation, loanSchedule, callsInAdvance, type BrsKind,
 } from '../../engine/src';
 import { Rng } from './rng';
 
@@ -414,6 +414,98 @@ export const GENERATORS: readonly Gen[] = [
         hints: ['Add back non-cash expenses (depreciation). Deduct gains that belong to INVESTING (sale of machinery).', 'An INCREASE in receivables means cash was tied up — deduct it. Then deduct tax paid.'],
         working: [`Operating profit before WC changes = ${R(M(pbt))} + ${R(M(dep))} − ${R(M(gain))} = ${R(c.operatingProfitBeforeWorkingCapital)}`, `Cash generated = ${R(c.cashGeneratedFromOperations)}`, `Less tax ${R(M(tax))} ⇒ ${R(c.cashFromOperating)}`],
         distractors: [{ part: 1, value: ans(c.cashFromOperating.add(M(gain).mulRatio(2n, 1n, 'HALF_UP'))), mistake: 'You ADDED the gain on sale instead of deducting it.', fix: 'A gain is already inside profit but its cash belongs to investing, so it is deducted here.' }],
+      };
+    },
+  },
+  // ───────────────────────────── added: remaining practice skills ─────────────────────────────
+  {
+    skill: 'pdd-provision', clause: 'XI.2.provisions', title: 'Provision for doubtful debts',
+    make: r => {
+      const debtors = r.multiple(100000, 500000, 10000), bad = r.multiple(2000, 10000, 1000), rate = r.pick([5, 10]), old = r.multiple(2000, 9000, 1000);
+      const res = provisionDoubtful({ debtors: M(debtors), additionalBadDebts: M(bad), pddPercent: BigInt(rate), oldPdd: M(old) });
+      const wrong = M(debtors).mulRatio(BigInt(rate), 100n, 'HALF_UP');
+      return {
+        stem: `Debtors at the end of the year are ${R(M(debtors))}. Further bad debts of ${R(M(bad))} are to be written off, and a provision for doubtful debts of ${rate}% is to be maintained. The existing provision is ${R(M(old))}. Find (a) the new provision and (b) the total charge to the Profit and Loss Account for bad debts and provision (the bad debts account has no other balance).`,
+        parts: [part('(a) New provision', ans(res.newPdd)), part('(b) Total charge to P&L', ans(res.totalCharge))],
+        hints: ['Write off the further bad debts FIRST; the provision is a percentage of the debtors that are left.', 'The P&L is charged with the new bad debts plus the INCREASE in provision (new provision minus the old one still in the books).'],
+        working: [`Debtors after bad debts = ${R(M(debtors))} − ${R(M(bad))} = ${R(res.debtorsAfterBadDebts)}`, `New provision = ${rate}% × ${R(res.debtorsAfterBadDebts)} = ${R(res.newPdd)}`, `Increase = ${R(res.newPdd)} − ${R(M(old))} = ${R(res.pddCharge)}`, `Charge = ${R(M(bad))} + (${R(res.pddCharge)}) = ${R(res.totalCharge)}`],
+        distractors: [{ part: 0, value: ans(wrong), mistake: 'You took the provision on the debtors BEFORE writing off the further bad debts.', fix: 'Deduct further bad debts first, then apply the percentage.' }],
+      };
+    },
+  },
+  {
+    skill: 'cashbook', clause: 'XI.2.cashbook', title: 'Cash book with bank column',
+    make: r => {
+      const cash = r.multiple(20000, 50000, 5000), bank = r.multiple(30000, 90000, 5000), recv = r.multiple(5000, 20000, 5000), dep = r.multiple(5000, 15000, 5000), pay = r.multiple(10000, 40000, 5000), wd = r.multiple(2000, 6000, 1000);
+      const cb = cashBook({ cash: M(cash), bank: M(bank) }, [
+        { particulars: 'Cash sales', kind: 'RECEIPT_CASH', amount: M(recv) }, { particulars: 'Deposited into bank', kind: 'DEPOSIT', amount: M(dep) },
+        { particulars: 'Supplier paid by cheque', kind: 'PAYMENT_BANK', amount: M(pay) }, { particulars: 'Cash withdrawn from bank', kind: 'WITHDRAWAL', amount: M(wd) }]);
+      return {
+        stem: `A trader starts with cash ${R(M(cash))} and a bank balance of ${R(M(bank))}. During the month: cash sales ${R(M(recv))}; cash deposited into the bank ${R(M(dep))}; a supplier paid by cheque ${R(M(pay))}; cash withdrawn from the bank ${R(M(wd))}. Find the closing balances in the cash and bank columns (a negative bank balance means an overdraft).`,
+        parts: [part('Closing cash', ans(cb.closingCash)), part('Closing bank', ans(cb.closingBank))],
+        hints: ['Depositing and withdrawing are CONTRA entries: each one appears in both columns, on opposite sides.', 'Cash column: add receipts and withdrawals, subtract payments and deposits. Bank column does the opposite for deposits and withdrawals.'],
+        working: cb.rows.map(x => `${x.txn.particulars}: cash ${R(x.cashBalance)}, bank ${R(x.bankBalance)}`),
+        distractors: [{ part: 1, value: ans(cb.closingBank.sub(M(dep))), mistake: 'You forgot the contra entry: a deposit raises the bank column as well as lowering the cash column.', fix: 'Record every contra entry on both sides (cash and bank).' }],
+      };
+    },
+  },
+  {
+    skill: 'opening-capital', clause: 'XI.3.concepts', title: 'Opening entry and capital',
+    make: r => {
+      const cash = r.multiple(10000, 60000, 5000), stock = r.multiple(40000, 150000, 10000), furn = r.multiple(20000, 80000, 10000), cred = r.multiple(10000, 60000, 5000), loan = r.multiple(20000, 90000, 10000);
+      const o = openingEntry({ assets: [{ name: 'Cash', amount: M(cash) }, { name: 'Stock', amount: M(stock) }, { name: 'Furniture', amount: M(furn) }], liabilities: [{ name: 'Creditors', amount: M(cred) }, { name: 'Bank Loan', amount: M(loan) }] });
+      const total = M(cash).add(M(stock)).add(M(furn));
+      return {
+        stem: `On 1 April a trader has: cash ${R(M(cash))}, stock ${R(M(stock))}, furniture ${R(M(furn))}; creditors ${R(M(cred))} and a bank loan of ${R(M(loan))}. Find the capital that goes in the opening entry.`,
+        parts: [part('Capital', ans(o.capital))],
+        hints: ['Capital is the owner’s claim: Assets − Liabilities (the accounting equation rearranged).', 'Add all the assets, add all the outside liabilities, then subtract.'],
+        working: [`Assets = ${R(total)}`, `Liabilities = ${R(M(cred).add(M(loan)))}`, `Capital = ${R(total)} − ${R(M(cred).add(M(loan)))} = ${R(o.capital)}`],
+        distractors: [{ part: 0, value: ans(total), mistake: 'You took total assets as capital and ignored what the business owes outsiders.', fix: 'Capital = Assets − Liabilities.' }],
+      };
+    },
+  },
+  {
+    skill: 'revaluation', clause: 'XII.1.ratio-change', title: 'Revaluation account',
+    make: r => {
+      const stockDown = r.multiple(2000, 9000, 1000), buildUp = r.multiple(10000, 30000, 5000), owing = r.multiple(1000, 4000, 1000), a = r.pick([3, 2, 5]), b = r.pick([2, 1, 3]);
+      const rv = revaluation([{ name: 'Stock', kind: 'ASSET', before: M(60000), after: M(60000 - stockDown) }, { name: 'Building', kind: 'ASSET', before: M(200000), after: M(200000 + buildUp) }, { name: 'Outstanding expenses', kind: 'LIABILITY', before: M(0), after: M(owing) }], { A: Fraction.of(a, a + b), B: Fraction.of(b, a + b) });
+      const noLiab = M(buildUp).sub(M(stockDown));
+      return {
+        stem: `At a change in the firm, stock is reduced by ${R(M(stockDown))}, the building is revalued upward by ${R(M(buildUp))} and an unrecorded expense of ${R(M(owing))} is brought into the books as a liability. Partners A and B share profits ${a}:${b}. Find (a) the profit or loss on revaluation (write a loss with a minus sign) and (b) A’s share of it.`,
+        parts: [part('(a) Profit (+) or loss (−)', ans(rv.profit)), part('(b) A’s share', ans(rv.partnerShare.A!))],
+        hints: ['A fall in an asset and a NEW liability are both losses; a rise in an asset is a gain. Net them.', 'The net amount is shared in the OLD profit-sharing ratio. Share with the largest-remainder rule so no paisa is lost.'],
+        working: rv.rows.map(x => `${x.item.name}: ${x.effect.isNegative() ? 'loss' : 'gain'} ${R(x.effect.abs())}`).concat([`Net = ${R(rv.profit)}`, `A’s share = ${R(rv.partnerShare.A!)}`]),
+        distractors: [{ part: 0, value: ans(noLiab), mistake: 'You left out the newly recorded liability, which is a loss on revaluation.', fix: 'An increase in a liability is debited to Revaluation Account.' }],
+      };
+    },
+  },
+  {
+    skill: 'loan-emi', clause: 'XII.C.spreadsheet', title: 'Loan instalment (EMI)',
+    make: r => {
+      const principal = r.multiple(100000, 1000000, 50000), rate = r.pick([6, 9, 12]), months = r.pick([12, 24]);
+      const ls = loanSchedule({ principal: M(principal), ratePercent: Fraction.of(rate), months });
+      const simple = M(principal).add(M(principal).mulRatio(BigInt(rate * months), 1200n, 'HALF_UP')).mulRatio(1n, BigInt(months), 'HALF_UP');
+      return {
+        stem: `A loan of ${R(M(principal))} at ${rate}% per annum is repaid in ${months} equal monthly instalments (reducing balance). In a spreadsheet you would use PMT. Find (a) the monthly instalment and (b) the interest part of the FIRST instalment.`,
+        parts: [part('(a) Monthly instalment', ans(ls.emi)), part('(b) Interest in month 1', ans(ls.rows[0]!.interest))],
+        hints: ['Interest each month is the monthly rate (annual rate ÷ 12) on the balance at the start of that month.', 'The instalment is the same every month and is worked out so that the balance ends at exactly zero (PMT).'],
+        working: [`Monthly rate = ${rate}% ÷ 12`, `Instalment (PMT) = ${R(ls.emi)}`, `Month 1 interest = ${R(M(principal))} × ${rate}% ÷ 12 = ${R(ls.rows[0]!.interest)}`],
+        distractors: [{ part: 0, value: ans(simple), mistake: 'You used simple interest on the full loan for the whole period.', fix: 'On a reducing-balance loan interest falls as the principal is repaid.' }],
+      };
+    },
+  },
+  {
+    skill: 'calls-advance', clause: 'XII.2.issue', title: 'Calls in advance',
+    make: r => {
+      const shares = r.multiple(2000, 10000, 1000), call = r.pick([3, 4, 5]), advShares = r.multiple(200, 1000, 100), advPer = r.pick([1, 2]);
+      const ca = callsInAdvance({ shares: BigInt(advShares), advancePerShare: M(advPer) });
+      const total = M(call).mulRatio(BigInt(shares), 1n, 'HALF_UP');
+      return {
+        stem: `A company has ${shares} shares on which a final call of ₹${call} per share is due. Shareholders holding ${advShares} shares pay ₹${advPer} per share in advance, before the call is made. (No interest is allowed on calls in advance.) Find (a) the amount of Calls in Advance and (b) the cash still to be collected when the call falls due, assuming every other shareholder pays in full.`,
+        parts: [part('(a) Calls in Advance', ans(ca.received)), part('(b) Cash still due on the call', ans(total.sub(ca.received)))],
+        hints: ['Money received before it is due is a liability — it sits in Calls in Advance until the call is made.', 'When the call falls due, the advance is adjusted against what those holders owe; only the remainder is collected in cash.'],
+        working: [`Calls in Advance = ${advShares} × ₹${advPer} = ${R(ca.received)}`, `Total call due = ${shares} × ₹${call} = ${R(total)}`, `Cash still due = ${R(total)} − ${R(ca.received)} = ${R(total.sub(ca.received))}`],
+        distractors: [{ part: 1, value: ans(total), mistake: 'You collected the full call again, forgetting that part of it was already received in advance.', fix: 'Adjust the advance against the call before working out the cash due.' }],
       };
     },
   },

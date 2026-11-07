@@ -13,3 +13,11 @@
 * **Feedback:** errors are plain sentences with the field marked `aria-invalid`; live regions announce posts, results and errors.
 * **Colour is never the only signal:** status chips carry text, balanced/unbalanced shows ✓/✗ and words.
 * **Dark mode, mobile** reviewed visually via screenshots in this session; not tested on real devices or other browsers.
+
+## Added components
+* **Concept card:** short paragraphs + English/Hinglish toggle + self-check radio questions with explanations.
+* **Stacked-composition tank** (accounting equation): one coloured segment per item, with a swatch in the list; empty state when nothing is posted.
+* **Heat-map table:** colour AND percentage text in every cell (never colour alone); legend in text.
+* **CAS workbench:** numbered sections (security → chart → voucher → queue → reports → year-end → audit/backup), role switcher, validation messages as plain sentences.
+* **Loading state** (spinner + text, `role=status`) wherever IndexedDB or a file is read; **empty states** on every list; **error states** are sentences with the field marked.
+* **Animation controls** (play / pause / step / reset / speed) exist on the Journal → Ledger page only; other visuals are static and driven by the same engine data.

@@ -12,6 +12,11 @@ official PDF SHA-256 `4a87dbd1…2857ecc27`.
 4. **Generators.** 24 practice generators × 1,500 seeds: answer recomputed, no hint leaks the answer, no distractor equals the answer.
 5. **No floating point** in money paths — a source-scanning test forbids `parseFloat`, `toFixed`, `Math.round/floor/ceil` in engine source.
 
+## Later calculators (extras.ts)
+Oracles: loan EMI ₹1,00,000 @ 12 % / 12 months = **₹8,884.88** (standard published result; independent of our code); every other case is a worked example with arithmetic in the
+test (cash book footing, GST on invoices incl. returns, provision order PDD → discount, revaluation shares, Act defaults, fixed ≡ fluctuating totals). Mutation check: 10/10 killed.
+Convention to confirm with a teacher: PDD is computed on debtors after **further** bad debts, discount provision on debtors after bad debts **and** PDD (standard CBSE order).
+
 ## Syllabus limits enforced (not extended)
 No interest on calls in arrears/advance · no debenture-redemption entries (issue with redemption terms only) · no TDS · dissolution: tangible assets
 unrealised at book value, intangibles nil · indirect cash-flow method only · current investments = cash equivalents · statement-of-affairs method only (no conversion) ·
@@ -36,4 +41,5 @@ Regression tests: `e2e/legacy-simulator-regression.cjs`.
 * Lab outputs were checked in the browser for *rendering and no-error*, and the engine functions behind them are validated; a human accountant has **not** reviewed every
   lab's wording or every printed number. This report is automated verification, not a professional audit.
 * Class XI sample paper values were not available as an oracle (decision D7); Class XI is validated by hand-worked cases only.
-* Schedule III statement *formats* are modelled for share capital and ratios; full Balance Sheet / P&L presentation of a company is not built.
+* Schedule III: Balance Sheet and Statement of P&L are modelled at the **head / sub-head totals** level (no detailed notes to accounts beyond share capital).
+* The Dissolution lab computes the realisation account and settlement in one step; it is not a step-by-step simulation where the student realises assets one at a time.

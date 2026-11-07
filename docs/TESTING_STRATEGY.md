@@ -28,25 +28,29 @@
 
 ## Current results (run locally 2026-11-07)
 
-* Engine: **184 tests** passed (8 files); mutation check **25/25** mutants killed (`packages/engine/test/mutation-check.py`).
-* Curriculum: **185 tests** passed (4 files); typecheck clean.
-* Web app: `tsc` clean, build OK, `e2e/web-app.cjs` **175/175** checks.
+* Engine: **209 tests** (9 files); mutation checks **25/25** (`test/mutation-check.py`) and **10/10** on the later calculators (`test/mutation-extras.py`).
+* Curriculum: **241 tests** (5 files) incl. 1,500-seed checks of 30 question generators, concept-card integrity, registry-vs-syllabus, rescue / assignment / heat-map logic.
+* Tutor proxy: **9 tests** (`node --test`) against a mock upstream — key never returned, output guard, limits, CORS.
+* Web: `tsc` clean; `e2e/web-app.cjs` **260/260**; `e2e/web-app-extra.cjs` **54/54** (cards, trainer, CAS end-to-end, project, rescue, assignments, heat-map, Option II, 11 known-value spot checks).
 * Legacy: `e2e/legacy-simulator-regression.cjs` 14/14; `e2e/legacy-smoke.cjs` 12/12.
+* All of the above in one command: `tools/check-all.sh`.
 
 ## Running
 
 ```
 cd packages/engine && npm install && npm run check
 (cd packages/curriculum && npx vitest run)
-(cd apps/web && npm install && npm run build) && NODE_PATH="$(npm root -g)" node e2e/web-app.cjs
+(cd apps/tutor-proxy && npm test)
+(cd apps/web && npm install && npm run build) && NODE_PATH="$(npm root -g)" node e2e/web-app.cjs && node e2e/web-app-extra.cjs
+tools/check-all.sh        # everything
 NODE_PATH="$(npm root -g)" node e2e/legacy-smoke.cjs                  # needs playwright + chromium
 NODE_PATH="$(npm root -g)" node e2e/legacy-simulator-regression.cjs
 ```
 
 ## Known gaps
 
-No CI yet (a workflow needs a token with `workflow` scope — owner decision). No coverage measurement. Accessibility is
-checked by hand-written DOM assertions (labels, headings, names, keyboard tabs), **not** by axe or a screen reader, and
-colour contrast was designed to WCAG AA but not measured by a tool. No performance (Lighthouse) run. Browser tests ran in
-Chromium only. The lab **result values** are verified at engine level; the browser tests check that results render, not
-every number. The legacy `index.html` has no engine-backed tests beyond the two e2e scripts.
+No CI is *running* (an example workflow is in `docs/ci/`; the token used here cannot create workflow files). No coverage measurement.
+Accessibility is checked by hand-written DOM assertions (labels, headings, names, keyboard tabs), **not** by axe or a screen reader;
+contrast was designed for WCAG AA but not measured. No Lighthouse run. Chromium only; no real devices. The tutor proxy has never
+talked to the live API. Lab result values are verified in the engine tests and by 11 browser spot checks, not for every lab number in the browser.
+Concept-card text is original and reviewed by me, not by a teacher.

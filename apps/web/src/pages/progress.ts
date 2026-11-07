@@ -1,10 +1,10 @@
-import { LEVELS, clauseById, mistakeTally, nextSkill, SKILLS, summariseClauses } from '../../../../packages/curriculum/src';
+import { LEVELS, assignmentProgress, clauseById, mistakeTally, nextSkill, parseAssignment, SKILLS, summariseClauses, type Assignment } from '../../../../packages/curriculum/src';
 import { h, mount } from '../dom';
-import { attempts, exportAll, resetAll, seen, setProfile, storageMode } from '../store';
+import { assignmentsAll, attempts, exportAll, resetAll, saveAssignment, seen, setProfile, storageMode } from '../store';
 import { state } from '../state';
 import { labsOfClause } from '../labs';
 import { parseExport } from '../../../../packages/curriculum/src';
-import { announce } from '../ui';
+import { announce, loading } from '../ui';
 
 export function download(name: string, text: string, type: string) {
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -12,9 +12,10 @@ export function download(name: string, text: string, type: string) {
 }
 
 export function progressPage(): HTMLElement {
-  const root = h('div', { class: 'progress' });
+  const root = h('div', { class: 'progress' }, loading('Loading your progress…'));
   async function draw() {
     const [a, s] = [await attempts(), await seen()];
+    const asg = (await assignmentsAll()) as unknown as Assignment[];
     const cls = state.profile.cls;
     const sum = summariseClauses(labsOfClause, a, s, cls);
     const started = sum.filter(x => x.level > 0);
@@ -23,7 +24,11 @@ export function progressPage(): HTMLElement {
     const next = nextSkill(a, cls, state.profile.route);
     const nextTitle = SKILLS.find(x => x.skill === next)?.title ?? next;
     const name = h('input', { type: 'text', id: 'pname', value: state.profile.name, maxlength: 40, autocomplete: 'off', placeholder: 'Your name or roll no. (shown to your teacher only if you send them the file)' });
-    const msg = h('p', { 'aria-live': 'polite', class: 'hint' });
+    const msg = h('p', { 'aria-live': 'polite', class: 'hint' }), asgMsg = h('p', { 'aria-live': 'polite', class: 'hint' });
+    const asgIn = h('input', { type: 'file', accept: 'application/json,.json', hidden: true, 'aria-label': 'Import an assignment file', onchange: async (e: Event) => {
+      const f = (e.target as HTMLInputElement).files?.[0]; if (!f) return;
+      try { const p = parseAssignment(JSON.parse(await f.text())); if (!p.ok) { asgMsg.textContent = `Cannot import: ${p.reason}.`; return; } asgMsg.textContent = (await saveAssignment(p.value)) ? `Imported “${p.value.title}”.` : 'You already have this assignment.'; void draw(); } catch { asgMsg.textContent = 'Cannot import: the file is not valid JSON.'; }
+    } });
     const fileIn = h('input', { type: 'file', accept: 'application/json,.json', 'aria-label': 'Import a progress file', hidden: true, onchange: async (e: Event) => {
       const f = (e.target as HTMLInputElement).files?.[0]; if (!f) return;
       try { const p = parseExport(JSON.parse(await f.text())); msg.textContent = p.ok ? `This file has ${p.value.attempts.length} attempts. Importing replaces nothing — to merge on a new device, use it on a fresh install.` : `Cannot import: ${p.reason}.`; } catch { msg.textContent = 'Cannot import: the file is not valid JSON.'; }
@@ -33,7 +38,10 @@ export function progressPage(): HTMLElement {
       h('section', { class: 'panel' }, h('h3', {}, 'Next best step'), h('p', {}, `Practise: ${nextTitle}`), h('a', { class: 'button primary', href: `#/practice/${next}` }, 'Go →')),
       weak.length ? h('section', { class: 'panel' }, h('h3', {}, 'Needs attention'), h('ul', {}, ...weak.map(w => h('li', {}, `${clauseById(w.clause)?.title ?? w.clause} — ${Math.round((w.accuracy ?? 0) * 100)}% on recent attempts`)))) : null,
       tally.length ? h('section', { class: 'panel' }, h('h3', {}, 'Mistakes you repeat most'), h('ol', {}, ...tally.map(t => h('li', {}, `${t.mistake} (×${t.count})`)))) : null,
-      h('section', { class: 'panel' }, h('h3', {}, 'The five levels, topic by topic'), h('p', { class: 'hint' }, 'Understand → Observe → Guided practice → Error correction → Independent mastery. Each level needs the one before it.'),
+      h('section', { class: 'panel' }, h('h3', {}, 'Assignments and tests from your teacher'),
+        asg.length === 0 ? h('p', { class: 'empty' }, 'None yet. When your teacher gives you a file, import it here.') : h('ul', { class: 'queue' }, ...asg.map(x => { const p = assignmentProgress(x, a); return h('li', {}, h('div', {}, h('b', {}, x.title), ` — ${p.done}/${x.items.length} done${p.outOf ? `, ${p.marks}/${p.outOf} marks` : ''}`), h('a', { class: 'button small', href: `#/assignment/${x.id}` }, 'Open')); })),
+        h('div', { class: 'actions' }, h('button', { type: 'button', onclick: () => asgIn.click() }, '⬆ Import an assignment file'), asgIn), asgMsg),
+      h('section', { class: 'panel' }, h('h3', {}, 'The five levels, topic by topic'), h('p', {}, h('a', { href: '#/rescue' }, 'Stuck on a topic? Open the rescue plan →')), h('p', { class: 'hint' }, 'Understand → Observe → Guided practice → Error correction → Independent mastery. Each level needs the one before it.'),
         h('div', { class: 'tablewrap' }, h('table', { class: 'data' }, h('thead', {}, h('tr', {}, h('th', { scope: 'col' }, 'Topic'), h('th', { scope: 'col' }, 'Level'), h('th', { scope: 'col', class: 'num' }, 'Recent accuracy'))),
           h('tbody', {}, ...sum.map(r => h('tr', {}, h('th', { scope: 'row' }, clauseById(r.clause)?.title ?? r.clause), h('td', {}, h('span', { class: `lvl l${r.level}` }, `${r.level} · ${LEVELS[r.level]}`)), h('td', { class: 'num' }, r.accuracy === null ? '—' : `${Math.round(r.accuracy * 100)}%`))))))),
       h('section', { class: 'panel' }, h('h3', {}, 'You and your data'),

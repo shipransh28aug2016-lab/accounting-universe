@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classReport, levelFor, mistakeTally, nextSkill, parseExport, reportToCsv, summariseClauses, type Attempt, type Seen } from '../src';
+import { classReport, levelFor, mistakeTally, nextSkill, parseExport, reportToCsv, summariseClauses, SKILLS, type Attempt, type Seen } from '../src';
 
 const LAB = 'xi-depreciation', CL = 'XI.2.depreciation';
 const at = (over: Partial<Attempt>, t = 1): Attempt => ({ t, skill: 'dep-wdv', clause: CL, seed: 1, mode: 'BEGINNER', marks: 1, outOf: 1, hintsUsed: 0, mistakes: [], correctParts: 1, parts: 1, ...over });
@@ -49,9 +49,10 @@ describe('summaries and mistakes', () => {
   });
   it('nextSkill: untried first, then the weakest; respects class and route', () => {
     expect(nextSkill([], 'XI').length).toBeGreaterThan(0);
-    const many = ['dep-wdv', 'dep-slm', 'disposal', 'brs', 'gst', 'suspense', 'pdd', 'soa'];
-    const tried = many.slice(0, 7).map((skill, i) => at({ skill, marks: skill === 'brs' ? 0 : 1, correctParts: skill === 'brs' ? 0 : 1 }, i));
-    expect(nextSkill(tried, 'XI')).toBe('soa');                       // the only untried XI skill
+    const many = SKILLS.filter(x => x.clause.startsWith('XI.')).map(x => x.skill);
+    const lastSkill = [...many].sort((a, b) => a.localeCompare(b)).filter(x => x !== 'brs')[0]!;   // ties between equally untried skills break alphabetically
+    const tried = many.filter(x => x !== lastSkill).map((skill, i) => at({ skill, marks: skill === 'brs' ? 0 : 1, correctParts: skill === 'brs' ? 0 : 1 }, i));
+    expect(nextSkill(tried, 'XI')).toBe(lastSkill);                   // the only untried XI skill
     const all = many.map((skill, i) => at({ skill, marks: skill === 'brs' ? 0 : 1 }, i));
     expect(nextSkill(all, 'XI')).toBe('brs');                         // then the weakest
     expect(nextSkill([], 'XII', 'OPTION_II_COMPUTERISED')).not.toMatch(/ratio|cfo/);   // Option I skills are hidden on the computerised route

@@ -13,9 +13,9 @@ const MODES: { id: Mode; label: string; blurb: string }[] = [
   { id: 'BOARD', label: 'Board', blurb: 'Exam conditions: no hints, one check, marks shown like a marking scheme.' },
 ];
 
-export function practicePage(skillArg?: string, seedArg?: string): HTMLElement {
+export function practicePage(skillArg?: string, seedArg?: string, modeArg?: string): HTMLElement {
   const root = h('div', { class: 'practice' });
-  let mode: Mode = 'PRACTICE';
+  let mode: Mode = modeArg && /^(beginner|practice|board)$/i.test(modeArg) ? (modeArg.toUpperCase() as Mode) : 'PRACTICE';
   const skillsHere = SKILLS.filter(s => s.clause.startsWith(state.profile.cls + '.') && !(state.profile.cls === 'XII' && state.profile.route === 'OPTION_II_COMPUTERISED' && /^XII\.[34]\./.test(s.clause)));
   let skill = skillArg && SKILLS.some(s => s.skill === skillArg) ? skillArg : skillsHere[0]?.skill ?? SKILLS[0]!.skill;
   let seed = seedArg && /^\d{1,9}$/.test(seedArg) ? Number(seedArg) : Math.floor(Math.random() * 1_000_000);

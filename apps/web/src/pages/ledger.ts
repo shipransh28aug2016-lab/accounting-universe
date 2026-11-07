@@ -3,6 +3,8 @@ import { h, mount, reducedMotion } from '../dom';
 import { renderBlock } from '../render';
 import { num } from '../inputs';
 import { announce } from '../ui';
+import { TYPE_WORD, ruleText } from '../rules';
+import { recordSeen } from '../store';
 
 interface Step { narration: string; lines: { a: string; s: Side; amt: string }[] }
 const SCENARIO: Step[] = [
@@ -14,7 +16,6 @@ const SCENARIO: Step[] = [
   { narration: 'Ravi withdrew ₹3,000 for personal use', lines: [{ a: 'drawings', s: 'DR', amt: '3000' }, { a: 'cash', s: 'CR', amt: '3000' }] },
   { narration: 'Paid creditors ₹10,000', lines: [{ a: 'creditors', s: 'DR', amt: '10000' }, { a: 'cash', s: 'CR', amt: '10000' }] },
 ];
-const TYPE_WORD: Record<string, string> = { ASSET: 'Asset', LIABILITY: 'Liability', CAPITAL: 'Capital', REVENUE: 'Income', EXPENSE: 'Expense', DRAWINGS: 'Drawings' };
 
 export function ledgerPage(): HTMLElement {
   let ledger = new Ledger(starterChartClassXI());
@@ -39,17 +40,13 @@ export function ledgerPage(): HTMLElement {
   };
   linesBox.append(lineRow('DR'), lineRow('CR'));
 
-  const ruleText = (a: string, s: Side) => {
-    const acct = chart.get(a); const nat = normalSide(acct.type);
-    const increases = s === nat;
-    return `${acct.name} is ${/^[AEI]/.test(TYPE_WORD[acct.type]!) ? 'an' : 'a'} ${TYPE_WORD[acct.type]!.toLowerCase()} account; it ${increases ? 'increases' : 'decreases'}, so it is ${s === 'DR' ? 'DEBITED' : 'CREDITED'} (${TYPE_WORD[acct.type]} ${increases ? '↑' : '↓'} → ${s === 'DR' ? 'Debit' : 'Credit'}).`;
-  };
+  const ruleOf = (a: string, s: Side) => ruleText(chart, a, s);
 
   function post(date_: string, narration: string, lines: DraftLine[], why?: string[]) {
     try {
       const e = ledger.post({ date: date_, narration, lines });
       err.textContent = '';
-      explain.replaceChildren(h('h4', {}, `${e.id}: ${narration}`), h('ul', {}, ...(why ?? lines.map(l => ruleText(l.accountId, l.side))).map(t => h('li', {}, t))));
+      explain.replaceChildren(h('h4', {}, `${e.id}: ${narration}`), h('ul', {}, ...(why ?? lines.map(l => ruleOf(l.accountId, l.side))).map(t => h('li', {}, t))));
       announce(`Posted ${e.id}. ${narration}`);
       draw();
       return true;
@@ -75,6 +72,7 @@ export function ledgerPage(): HTMLElement {
   }
 
   function playStep() {
+    void recordSeen({ lab: 'xi-ledger', tab: 'example', t: Date.now() });
     const s = SCENARIO[step];
     if (!s) { stop(); return false; }
     post('2026-04-' + String(step + 1).padStart(2, '0'), s.narration, s.lines.map(l => ({ accountId: l.a, side: l.s, amount: Money.parse(l.amt) })));
@@ -134,6 +132,7 @@ export function ledgerPage(): HTMLElement {
     );
   }
   draw();
+  void recordSeen({ lab: 'xi-ledger', tab: 'learn', t: Date.now() });
   return h('div', { class: 'ledger-lab' },
     h('header', { class: 'labhead' }, h('p', { class: 'eyebrow' }, 'Class XI'), h('h2', {}, 'Journal → Ledger → Trial Balance'), h('p', { class: 'lead' }, 'Every transaction has two sides. Watch them travel from the journal to the ledger and into the trial balance.')),
     h('section', { class: 'panel' }, h('h3', {}, 'Watch a business happen'), h('p', {}, 'Ravi’s first week, one transaction at a time. Each step shows the rule of debit and credit that applies.'), controls, explain),

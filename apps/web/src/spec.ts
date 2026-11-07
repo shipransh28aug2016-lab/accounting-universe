@@ -45,5 +45,5 @@ export interface Lab {
   /** Practice skills (see packages/curriculum questions) that exercise this lab. */
   readonly skills: readonly string[];
   /** Optional route restriction for Class XII. */
-  readonly route?: 'OPTION_I_ANALYSIS';
+  readonly route?: 'OPTION_I_ANALYSIS' | 'OPTION_II_COMPUTERISED';
 }

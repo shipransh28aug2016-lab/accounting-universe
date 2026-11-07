@@ -1,0 +1,18 @@
+# Copy to .github/workflows/ci.yml. It is kept here because the token used to build this repo cannot create workflow files.
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: cd packages/engine && npm ci && npm run check
+      - run: cd packages/curriculum && npm run check        # uses the engine's node_modules via symlink: run the engine install first
+      - run: cd apps/tutor-proxy && npm test
+      - run: cd apps/web && npm ci && npm run build
+      - run: npx playwright install --with-deps chromium && npm i -g playwright http-server
+      - run: NODE_PATH="$(npm root -g)" node e2e/web-app.cjs
+      - run: NODE_PATH="$(npm root -g)" node e2e/web-app-extra.cjs
+      - run: NODE_PATH="$(npm root -g)" node e2e/legacy-smoke.cjs && NODE_PATH="$(npm root -g)" node e2e/legacy-simulator-regression.cjs

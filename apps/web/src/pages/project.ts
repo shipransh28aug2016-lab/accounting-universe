@@ -1,0 +1,49 @@
+import { h, mount } from '../dom';
+import { getProject, recordSeen, setProject } from '../store';
+import { announce } from '../ui';
+import { download } from './progress';
+
+interface Step { id: string; text: string; link?: { href: string; label: string } }
+interface Option { id: string; title: string; blurb: string; steps: Step[]; viva: string[] }
+const XI: Option[] = [
+  { id: 'vouchers', title: 'Source documents and vouchers', blurb: 'Collect or prepare source documents and turn each into an accounting voucher.',
+    steps: [{ id: 's1', text: 'Choose a small business (real or imagined) and list 15–20 transactions with dates.' }, { id: 's2', text: 'For each, prepare or paste the source document (cash memo, invoice, receipt, cheque, pay-in-slip, debit/credit note).', link: { href: '#/cards/vouchers', label: 'Card: source documents and vouchers' } }, { id: 's3', text: 'Prepare a voucher (receipt, payment or journal) for each transaction, with date, parties, amount and accounts affected.' }, { id: 's4', text: 'Number the vouchers and file them in date order with a contents page.' }, { id: 's5', text: 'Check: does every voucher agree with its source document?' }],
+    viva: ['What is a source document? Name three.', 'Which voucher would you prepare for a credit purchase?', 'When do we issue a debit note?'] },
+  { id: 'brs', title: 'Bank reconciliation statement', blurb: 'Prepare a BRS from a cash book and a pass book containing 20–25 transactions.',
+    steps: [{ id: 's1', text: 'Prepare the bank column of a cash book and a matching pass book with 20–25 transactions.', link: { href: '#/lab/xi-cashbook', label: 'Cash Book Simulator' } }, { id: 's2', text: 'Tick off items that appear in both; list those that appear in only one.' }, { id: 's3', text: 'Classify each difference (cheque issued not presented, deposited not collected, bank charges, interest, direct deposits…).', link: { href: '#/lab/xi-brs', label: 'Bank Reconciliation Lab' } }, { id: 's4', text: 'Prepare the BRS starting from the cash-book balance, then check by starting from the pass-book balance.' }, { id: 's5', text: 'Write a short note on why differences arise.' }],
+    viva: ['Why do the two balances differ?', 'A cheque issued but not presented: add or deduct? Why?', 'Does a BRS change the cash book?'] },
+  { id: 'comprehensive', title: 'Comprehensive sole-proprietorship project', blurb: 'Journal → ledger → trial balance → final accounts, with charts and (optionally) simple GST.',
+    steps: [{ id: 's1', text: 'Describe the business and its opening position; pass the opening entry.', link: { href: '#/lab/xi-opening', label: 'Opening Entry lab' } }, { id: 's2', text: 'Record at least a month of transactions in the books of original entry (subsidiary books and cash book).', link: { href: '#/lab/xi-subsidiary', label: 'Subsidiary Books Simulator' } }, { id: 's3', text: 'Post to the ledger and balance the accounts.', link: { href: '#/ledger', label: 'Journal → Ledger → Trial Balance' } }, { id: 's4', text: 'Prepare the trial balance.' }, { id: 's5', text: 'Pass the adjustment entries and prepare Trading, Profit & Loss account and Balance Sheet.', link: { href: '#/lab/xi-final-accounts', label: 'Final Accounts with Adjustments' } }, { id: 's6', text: 'Add at least one chart (pie or bar) drawn from your figures, and an optional GST working.', link: { href: '#/lab/xi-gst', label: 'Invoice, Trade Discount & GST' } }],
+    viva: ['How did you decide each account’s debit or credit?', 'What adjustments did you make and why?', 'What does your balance sheet tell you about the business?'] },
+];
+const XII_I: Option = { id: 'analysis', title: 'Project on analysis of a company (any two aspects)', blurb: 'Choose a listed company’s financial statements and analyse any TWO aspects.',
+  steps: [{ id: 's1', text: 'Pick a company and collect two years of its Balance Sheet and Statement of Profit and Loss.', link: { href: '#/lab/xii-schedule3', label: 'Schedule III lab' } }, { id: 's2', text: 'Aspect A — comparative and common-size statements.', link: { href: '#/lab/xii-statements', label: 'Comparative & Common-size lab' } }, { id: 's3', text: 'Aspect B — ratio analysis (liquidity, solvency, activity, profitability) with interpretation.', link: { href: '#/lab/xii-ratios', label: 'Ratio lab' } }, { id: 's4', text: 'Aspect C — cash flow statement (indirect method).', link: { href: '#/lab/xii-cashflow', label: 'Cash Flow lab' } }, { id: 's5', text: 'Aspect D — segment reports (as the syllabus lists it). Choose any TWO aspects in total; tick only the two you do.' }, { id: 's6', text: 'Write your findings: what is improving, what is worrying, what you would advise.' }, { id: 's7', text: 'Compile the file (12 marks) and prepare for the viva (8 marks).' }],
+  viva: ['Why did you choose this company and these aspects?', 'Explain one ratio and what its change means.', 'What are the limitations of ratio analysis?'] };
+const XII_II: Option = { id: 'practical', title: 'Computerised accounting practical file', blurb: 'The Option II practical: file (12 marks) and viva (8 marks).',
+  steps: [{ id: 's1', text: 'Create the chart of accounts with codes and heads.', link: { href: '#/cas', label: 'Computerised Accounting Simulator' } }, { id: 's2', text: 'Enter and verify vouchers for a business; print the ledger and trial balance.' }, { id: 's3', text: 'Pass adjusting entries and produce the Balance Sheet and P&L.' }, { id: 's4', text: 'Do a spreadsheet exercise: loan schedule, depreciation, ratios or BRS.', link: { href: '#/lab/xii-spreadsheet', label: 'Spreadsheet Lab' } }, { id: 's5', text: 'Document security settings (roles, backup) and the closing / opening entries.' }, { id: 's6', text: 'Assemble the practical file and prepare for the viva.' }],
+  viva: ['What is codification and why is it used?', 'How does the system stop an unbalanced voucher?', 'What is the difference between validation and verification?'] };
+
+export function projectPage(cls: 'XI' | 'XII', route: 'OPTION_I_ANALYSIS' | 'OPTION_II_COMPUTERISED'): HTMLElement {
+  const options = cls === 'XI' ? XI : [route === 'OPTION_II_COMPUTERISED' ? XII_II : XII_I];
+  let chosen = options[0]!.id; const done = new Set<string>(); const notes: Record<string, string> = {}; const key = `project-${cls}-${cls === 'XII' ? route : ''}`;
+  const root = h('div', { class: 'project' }), say = h('p', { 'aria-live': 'polite', class: 'hint' });
+  const save = () => { void setProject(key, { chosen, done: [...done], notes }); say.textContent = 'Saved on this device.'; };
+  function draw() {
+    const opt = options.find(o => o.id === chosen)!;
+    const total = opt.steps.length, n = opt.steps.filter(s => done.has(`${opt.id}:${s.id}`)).length;
+    mount(root,
+      h('header', { class: 'labhead' }, h('p', { class: 'eyebrow' }, `Class ${cls} project`), h('h2', {}, cls === 'XI' ? 'Project Assistant (Class XI)' : route === 'OPTION_II_COMPUTERISED' ? 'Practical Assistant (Class XII, Option II)' : 'Project Assistant (Class XII, Option I)'),
+        h('p', { class: 'lead' }, cls === 'XI' ? 'The syllabus asks for ONE of three project types (20 marks). Choose one, then follow the steps.' : 'Official split: file 12 marks + viva 8 marks. Your teacher and school set the exact format — this assistant keeps you organised.'),
+        h('p', { class: 'note warn' }, 'This assistant plans and tracks your work. The project itself must be your own: nothing here writes it for you.')),
+      cls === 'XI' ? h('div', { class: 'modes', role: 'radiogroup', 'aria-label': 'Project type' }, ...options.map(o => h('button', { type: 'button', role: 'radio', 'aria-checked': String(o.id === chosen), class: o.id === chosen ? 'on' : '', onclick: () => { chosen = o.id; save(); draw(); } }, o.title))) : null,
+      h('section', { class: 'panel' }, h('h3', {}, opt.title), h('p', {}, opt.blurb), h('div', { class: 'meter', role: 'img', 'aria-label': `${n} of ${total} steps done` }, h('div', { class: 'meterfill', style: `width:${Math.round(n / total * 100)}%` })), h('p', { class: 'hint' }, `${n} of ${total} steps done`),
+        h('ul', { class: 'steplist' }, ...opt.steps.map(s => { const k = `${opt.id}:${s.id}`; return h('li', {}, h('label', { class: 'radio' }, h('input', { type: 'checkbox', ...(done.has(k) ? { checked: true } : {}), onchange: (e: Event) => { if ((e.target as HTMLInputElement).checked) done.add(k); else done.delete(k); save(); draw(); void recordSeen({ lab: cls === 'XI' ? 'xi-project' : 'xii-project', tab: 'example', t: Date.now() }); } }), ' ', s.text), s.link ? h('a', { class: 'pill', href: s.link.href }, s.link.label) : null); }))),
+      h('section', { class: 'panel' }, h('h3', {}, 'My notes'), h('div', { class: 'field' }, h('label', { for: 'pnotes' }, 'Notes, sources and decisions for this project'), h('textarea', { id: 'pnotes', rows: 6, oninput: (e: Event) => { notes[chosen] = (e.target as HTMLTextAreaElement).value; }, onchange: save }, notes[chosen] ?? '')), say),
+      h('section', { class: 'panel' }, h('h3', {}, 'Viva practice'), h('ul', {}, ...opt.viva.map(q => h('li', {}, q))), h('p', { class: 'hint' }, 'Practise answering aloud. Examiners ask about YOUR choices and figures.')),
+      h('div', { class: 'actions' }, h('button', { type: 'button', class: 'primary', onclick: () => download(`project-outline-${chosen}.md`, `# ${opt.title}\n\n${opt.steps.map(s => `- [${done.has(`${opt.id}:${s.id}`) ? 'x' : ' '}] ${s.text}`).join('\n')}\n\n## Notes\n\n${notes[chosen] ?? ''}\n`, 'text/markdown') }, '⬇ Download my checklist')));
+  }
+  draw(); announce('');
+  void recordSeen({ lab: cls === 'XI' ? 'xi-project' : 'xii-project', tab: 'learn', t: Date.now() });
+  void getProject(key).then(d => { if (!d) return; chosen = options.some(o => o.id === d.chosen) ? String(d.chosen) : chosen; (d.done as string[] | undefined)?.forEach(x => done.add(x)); Object.assign(notes, d.notes ?? {}); draw(); });
+  return root;
+}
