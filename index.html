@@ -3686,18 +3686,34 @@ requestAnimationFrame(()=>jbpRender());
 /* ============ MODULE 7: SIMULATOR ============ */
 const SIM = { journal:[], ledger:{} , n:0};
 const ACC_TYPE = {Cash:"A", Machinery:"A", Stock:"A", Capital:"Q", "Bank Loan":"L", Sales:"R", Rent:"E", Creditors:"L", Drawings:"Q"};
+/* Resolve an account's type from its NAME. Callers never pass a type, and the small ACC_TYPE
+   dictionary above does not cover most accounts (Debtors, Purchases, Salary…). The engine's
+   classifier is the single source of truth; Drawings is held as equity (contra) as before.
+   Previously this read an undefined `x.t`, so every ledger account was untyped: the Simulator's
+   Balance Sheet was empty (0 = 0 "balanced") and Debtors/Purchases carried the wrong sign. */
+function simTypeOf(name){
+  const raw = ACC_TYPE[name] || (window.AcctEngine ? window.AcctEngine.classify(name) : undefined);
+  return raw==="X" ? "Q" : raw;
+}
+// Apply ONE line to the ledger. For A,E: Dr+ Cr-; for L,R,Q: Cr+ Dr-
+function simApplyLine(name, amt, side){
+  const t = simTypeOf(name);
+  if(!SIM.ledger[name]) SIM.ledger[name]={type:t, bal:0};
+  const sign = (t==="A"||t==="E") ? (side==="dr"?1:-1) : (side==="cr"?1:-1);
+  SIM.ledger[name].bal += sign*amt;
+}
+// Rebuild the ledger from the journal (used for sessions saved before the typing fix).
+function simRebuildLedger(){
+  SIM.ledger = {};
+  SIM.journal.forEach(e=>{
+    e.dr.forEach(x=>simApplyLine(x.a,x.amt,"dr"));
+    e.cr.forEach(x=>simApplyLine(x.a,x.amt,"cr"));
+  });
+}
 function simPost(label, dr, cr){
   SIM.n++; SIM.journal.push({n:SIM.n,label,dr,cr});
-  // ledger
-  function apply(name,type,amt,side){
-    if(!SIM.ledger[name]) SIM.ledger[name]={type, bal:0};
-    // For A,E: Dr+ Cr-; For L,R,Q: Cr+ Dr-
-    const t=ACC_TYPE[name];
-    const sign = (t==="A"||t==="E") ? (side==="dr"?1:-1) : (side==="cr"?1:-1);
-    SIM.ledger[name].bal += sign*amt;
-  }
-  dr.forEach(x=>apply(x.a,x.t,x.amt,"dr"));
-  cr.forEach(x=>apply(x.a,x.t,x.amt,"cr"));
+  dr.forEach(x=>simApplyLine(x.a,x.amt,"dr"));
+  cr.forEach(x=>simApplyLine(x.a,x.amt,"cr"));
   simRender();
 }
 function simRender(){
@@ -4601,7 +4617,13 @@ document.addEventListener("keydown",e=>{
     const raw=sessionStorage.getItem(KEY);
     if(raw){
       const s=JSON.parse(raw);
-      if(s&&s.journal){ SIM.journal=s.journal; SIM.ledger=s.ledger||{}; SIM.n=s.n||0; }
+      if(s&&s.journal){
+        SIM.journal=s.journal; SIM.ledger=s.ledger||{}; SIM.n=s.n||0;
+        // Sessions saved before the typing fix hold untyped, wrongly-signed ledgers and must be
+        // rebuilt from the journal. AcctEngine is not defined yet at this point (it loads below), so
+        // only flag it here; the rebuild runs right after AcctEngine is installed.
+        if(Object.values(SIM.ledger).some(o=>!o||!o.type)) SIM._needsRebuild = true;
+      }
     }
   }catch(_){}
   function persist(){
@@ -4644,7 +4666,10 @@ document.addEventListener("keydown",e=>{
     if(t.n===0) return;
     if(Date.now()-m1Touched < 3000) return;   // respect manual exploration
     if(typeof M1!=="undefined" && typeof m1Render==="function"){
-      // Mirror simulator totals into M1 individual accounts
+      // Mirror simulator totals into M1. Clear M1's own balances first: the mirror carries the
+      // Simulator's totals only, and leftover manual balances (Stock, Machinery…) would be counted
+      // on top of them and show a false imbalance.
+      Object.keys(M1_ACCTS).forEach(k=>{ M1_ACCTS[k] = 0; });
       M1_ACCTS.Cash = t.assets;
       M1_ACCTS.Capital = t.adjCap;
       M1_ACCTS.Creditors = t.lia;
@@ -4816,6 +4841,13 @@ document.addEventListener("keydown",e=>{
     isCapital:n=>classify(n)==="Q", isExpense:n=>classify(n)==="E",
     isRevenue:n=>classify(n)==="R", isDrawings:n=>classify(n)==="X"
   };
+
+  // Now that the classifier exists, finish restoring a session saved before the typing fix.
+  if(typeof SIM!=="undefined" && SIM._needsRebuild){
+    delete SIM._needsRebuild;
+    simRebuildLedger();
+    if(typeof simRender==="function") simRender();
+  }
 
   /* ---------- ROUTE EXISTING MODULES THROUGH THE ENGINE ----------
      Patch ACC_TYPE used by Simulator (m7) and wrap simPost so every
