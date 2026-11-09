@@ -3,6 +3,9 @@ import { h, mount, reducedMotion } from '../dom';
 import { renderBlock } from '../render';
 import { num } from '../inputs';
 import { announce } from '../ui';
+import { Machine } from '../../../../packages/engine/src';
+import { LEDGER_PLAYER } from '../../../../packages/curriculum/src';
+import { onDispose, setAvailability, stamp, track, unregister } from '../machine-dom';
 import { TYPE_WORD, ruleText } from '../rules';
 import { recordSeen } from '../store';
 
@@ -71,31 +74,46 @@ export function ledgerPage(): HTMLElement {
     if (post(date.value, narr.value, lines)) { narr.value = ''; for (const i of Array.from(linesBox.querySelectorAll('input'))) i.value = ''; }
   }
 
-  function playStep() {
+  // ── the animated story, driven by the `ledger-player` machine (see docs/STATE_MACHINES.md) ──
+  const player = new Machine(LEDGER_PLAYER);
+  const say = (t: string) => { status.textContent = t; };
+  const interval = () => (reducedMotion() ? 2400 : 1800) / speed;
+  const clearTimer = () => { if (timer !== undefined) { clearInterval(timer); timer = undefined; } };
+  const startTimer = () => { clearTimer(); timer = window.setInterval(() => { if (player.send('TICK').ok) postNext(); }, interval()); };
+  /** Post the next transaction of the story; tell the machine when the story is complete. */
+  function postNext() {
     void recordSeen({ lab: 'xi-ledger', tab: 'example', t: Date.now() });
     const s = SCENARIO[step];
-    if (!s) { stop(); return false; }
+    if (!s) { player.send('DONE'); return; }
     post('2026-04-' + String(step + 1).padStart(2, '0'), s.narration, s.lines.map(l => ({ accountId: l.a, side: l.s, amount: Money.parse(l.amt) })));
-    step++;
-    status.textContent = `Step ${step} of ${SCENARIO.length}`;
-    if (step >= SCENARIO.length) stop();
-    return true;
+    step++; say(`Step ${step} of ${SCENARIO.length}`);
+    if (step >= SCENARIO.length) player.send('DONE');
   }
-  function stop() { if (timer !== undefined) { clearInterval(timer); timer = undefined; } playBtn.textContent = '▶ Play'; playBtn.setAttribute('aria-pressed', 'false'); }
-  function play() {
-    if (timer !== undefined) { stop(); return; }
-    if (step >= SCENARIO.length) return;
-    playBtn.textContent = '⏸ Pause'; playBtn.setAttribute('aria-pressed', 'true');
-    playStep();
-    if (step < SCENARIO.length) timer = window.setInterval(playStep, (reducedMotion() ? 2400 : 1800) / speed);
+  player.subscribe(m => {                      // the ONLY place that starts/stops the timer and labels the buttons
+    if (m.is('PLAYING')) startTimer(); else clearTimer();
+    playBtn.textContent = m.is('PLAYING') ? '⏸ Pause' : m.is('FINISHED') ? '↺ Replay' : '▶ Play';
+    playBtn.setAttribute('aria-pressed', String(m.is('PLAYING')));
+    setAvailability(stepBtn, m.why('STEP'));
+    stamp(controls, m);
+  });
+  onDispose(() => { player.send('DISPOSE'); unregister(player); });   // leaving the page must stop the timer
+  function onPlayClick() {
+    if (player.is('PLAYING')) { player.send('PAUSE'); return; }
+    if (player.is('FINISHED')) { resetBooks(); if (player.send('REPLAY').ok) postNext(); return; }
+    const r = player.send('PLAY'); if (!r.ok) { say(r.reason!); return; }
+    postNext();
   }
-  function reset() { stop(); ledger = new Ledger(chart); step = 0; status.textContent = ''; err.textContent = ''; explain.replaceChildren(); draw(); announce('Reset. The books are empty.'); }
+  function onStepClick() { const r = player.send('STEP'); if (!r.ok) { say(r.reason!); return; } postNext(); }
+  function resetBooks() { ledger = new Ledger(chart); step = 0; say(''); err.textContent = ''; explain.replaceChildren(); draw(); }
+  function onReset() { player.send('RESET'); resetBooks(); announce('Reset. The books are empty.'); }
 
-  const playBtn = h('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', onclick: play }, '▶ Play');
-  const speedSel = h('select', { 'aria-label': 'Speed', onchange: (e: Event) => { speed = Number((e.target as HTMLSelectElement).value); if (timer !== undefined) { stop(); play(); } } },
+  const playBtn = h('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', onclick: onPlayClick }, '▶ Play');
+  const stepBtn = h('button', { type: 'button', onclick: onStepClick }, '⏭ Step');
+  const speedSel = h('select', { 'aria-label': 'Speed', onchange: (e: Event) => { speed = Number((e.target as HTMLSelectElement).value); if (player.send('SPEED').ok && player.is('PLAYING')) startTimer(); } },
     h('option', { value: '0.5' }, '0.5× slower'), h('option', { value: '1', selected: true }, '1× normal'), h('option', { value: '2' }, '2× faster'));
   const controls = h('div', { class: 'controls', role: 'group', 'aria-label': 'Animation controls' },
-    playBtn, h('button', { type: 'button', onclick: () => { stop(); playStep(); } }, '⏭ Step'), h('button', { type: 'button', onclick: reset }, '↺ Reset'), h('label', { class: 'inl' }, 'Speed ', speedSel), status);
+    playBtn, stepBtn, h('button', { type: 'button', onclick: onReset }, '↺ Reset'), h('label', { class: 'inl' }, 'Speed ', speedSel), status);
+  track(controls, player);
 
   function draw() {
     const eq = ledger.equation(), tb = ledger.trialBalance();

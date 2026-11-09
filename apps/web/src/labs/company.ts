@@ -4,6 +4,7 @@ import {
   operatingRatio, payablesTurnoverRatio, profitAfterTax, proprietaryRatio, quickRatio, receivablesTurnoverRatio, reissue, returnOnInvestment, shareCapitalNote, totalAssetsToDebtRatio,
   workingCapitalTurnoverRatio, writeOffIssueLosses, type Instalment, type RatioResult,
 } from '../../../../packages/engine/src';
+import { shareStages } from '../../../../packages/curriculum/src';
 import { InputError, type Block, type Lab } from '../spec';
 import { money, num, optMoney, percent, whole } from '../inputs';
 import { bar, note, R } from './common';
@@ -51,18 +52,18 @@ export const shares: Lab = {
     catch (e) { if (e instanceof ShareError) throw new InputError(e.message + ' Adjust the shares offered / applied for so that pro-rata allotment gives whole shares.'); throw e; }
     const blocks: Block[] = [];
     const subscribed = r.plan.accepted;
-    blocks.push({ kind: 'lifecycle', stages: [
-      { name: 'Application', detail: `${r.applicationReceived.format()} received on ${pro + rej} shares`, state: 'done' },
-      { name: 'Allotment', detail: `${subscribed} shares allotted${r.plan.proRataRatio.toString() === '1' ? '' : ` (pro-rata ${r.plan.proRataRatio.toString()})`}; refund ${R(r.refund)}`, state: 'done' },
-      { name: 'Call', detail: `due on ${subscribed} shares`, state: 'done' },
-      { name: 'Payment status', detail: r.callsInArrears.isZero() ? 'all paid' : `calls in arrears ${R(r.callsInArrears)}`, state: r.callsInArrears.isZero() ? 'done' : 'issue' },
-      { name: 'Forfeiture', detail: (v.fShares ?? '0') === '0' ? 'none' : `${v.fShares} shares forfeited`, state: (v.fShares ?? '0') === '0' ? 'skip' : 'issue' },
-      { name: 'Re-issue', detail: (v.reShares ?? '0') === '0' ? 'none' : `${v.reShares} shares re-issued`, state: (v.reShares ?? '0') === '0' ? 'skip' : 'done' },
-    ] });
+    // The lifecycle strip is derived from the `share-lifecycle` machine, so an impossible story is refused in words.
+    const nF = whole(v, 'fShares', 'Shares forfeited', 0), nR = whole(v, 'reShares', 'Shares re-issued', 0);
+    let st: ReturnType<typeof shareStages>;
+    try { st = shareStages({ arrears: r.callsInArrears.isPositive(), forfeited: nF > 0, reissued: nR > 0 }); }
+    catch (e) { if (e instanceof RangeError) throw new InputError(`${e.message}${nF > 0 && !r.callsInArrears.isPositive() ? ' Enter the unpaid amount under "Calls in arrears" first.' : ''}`, nF > 0 ? 'fShares' : 'reShares'); throw e; }
+    const detail = [`${r.applicationReceived.format()} received on ${pro + rej} shares`, `${subscribed} shares allotted${r.plan.proRataRatio.toString() === '1' ? '' : ` (pro-rata ${r.plan.proRataRatio.toString()})`}; refund ${R(r.refund)}`, `due on ${subscribed} shares`,
+      r.callsInArrears.isZero() ? 'all paid' : `calls in arrears ${R(r.callsInArrears)}`, nF === 0 ? 'none' : `${nF} shares forfeited`, nR === 0 ? 'none' : `${nR} shares re-issued`];
+    blocks.push({ kind: 'lifecycle', stages: st.map((x, i) => ({ name: x.name, detail: detail[i]!, state: x.state })) });
     blocks.push({ kind: 'heading', text: 'Journal entries for the issue' });
     blocks.push({ kind: 'journal', entries: r.entries });
     blocks.push({ kind: 'table', caption: 'Totals after the issue', head: ['', '₹'], numeric: [1], rows: [['Share capital called up', R(r.shareCapital)], ['Securities premium', R(r.securitiesPremium)], ['Calls in arrears', R(r.callsInArrears)]] });
-    const fN = whole(v, 'fShares', 'Shares forfeited', 0);
+    const fN = nF;
     let fRes: ReturnType<typeof forfeit> | undefined;
     if (fN > 0) {
       fRes = forfeit({ shares: BigInt(fN), called: instalments, receivedByInstalment: [optMoney(v, 'rApp', 'Application received'), optMoney(v, 'rAl', 'Allotment received'), optMoney(v, 'rCa', 'Call received')] });
@@ -70,7 +71,7 @@ export const shares: Lab = {
       blocks.push({ kind: 'journal', entries: [fRes.entry] });
       blocks.push(note(`Premium received on these shares (${R(fRes.premiumReceived)}) stays in Securities Premium; only the amount received on SHARE CAPITAL, ${R(fRes.forfeitedCredit)}, is credited to Share Forfeited.`, 'info'));
     }
-    const reN = whole(v, 'reShares', 'Shares re-issued', 0);
+    const reN = nR;
     if (reN > 0) {
       if (!fRes) throw new InputError('Enter the shares forfeited before re-issuing any.', 'fShares');
       if (reN > fN) throw new InputError('You cannot re-issue more shares than were forfeited.', 'reShares');

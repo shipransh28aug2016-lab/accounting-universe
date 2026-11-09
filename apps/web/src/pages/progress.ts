@@ -1,10 +1,11 @@
 import { LEVELS, assignmentProgress, clauseById, mistakeTally, nextSkill, parseAssignment, SKILLS, summariseClauses, type Assignment } from '../../../../packages/curriculum/src';
 import { h, mount } from '../dom';
-import { assignmentsAll, attempts, exportAll, resetAll, saveAssignment, seen, setProfile, storageMode } from '../store';
+import { type Attempt, type Seen, assignmentsAll, attempts, exportAll, resetAll, saveAssignment, seen, setProfile, storageMode } from '../store';
 import { state } from '../state';
 import { labsOfClause } from '../labs';
 import { parseExport } from '../../../../packages/curriculum/src';
-import { announce, loading } from '../ui';
+import { announce } from '../ui';
+import { loadInto } from '../async';
 
 export function download(name: string, text: string, type: string) {
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -12,10 +13,8 @@ export function download(name: string, text: string, type: string) {
 }
 
 export function progressPage(): HTMLElement {
-  const root = h('div', { class: 'progress' }, loading('Loading your progress…'));
-  async function draw() {
-    const [a, s] = [await attempts(), await seen()];
-    const asg = (await assignmentsAll()) as unknown as Assignment[];
+  const root = h('div', { class: 'progress' });
+  function view(a: Attempt[], s: Seen[], asg: Assignment[]) {
     const cls = state.profile.cls;
     const sum = summariseClauses(labsOfClause, a, s, cls);
     const started = sum.filter(x => x.level > 0);
@@ -27,7 +26,7 @@ export function progressPage(): HTMLElement {
     const msg = h('p', { 'aria-live': 'polite', class: 'hint' }), asgMsg = h('p', { 'aria-live': 'polite', class: 'hint' });
     const asgIn = h('input', { type: 'file', accept: 'application/json,.json', hidden: true, 'aria-label': 'Import an assignment file', onchange: async (e: Event) => {
       const f = (e.target as HTMLInputElement).files?.[0]; if (!f) return;
-      try { const p = parseAssignment(JSON.parse(await f.text())); if (!p.ok) { asgMsg.textContent = `Cannot import: ${p.reason}.`; return; } asgMsg.textContent = (await saveAssignment(p.value)) ? `Imported “${p.value.title}”.` : 'You already have this assignment.'; void draw(); } catch { asgMsg.textContent = 'Cannot import: the file is not valid JSON.'; }
+      try { const p = parseAssignment(JSON.parse(await f.text())); if (!p.ok) { asgMsg.textContent = `Cannot import: ${p.reason}.`; return; } asgMsg.textContent = (await saveAssignment(p.value)) ? `Imported “${p.value.title}”.` : 'You already have this assignment.'; res.reload(); } catch { asgMsg.textContent = 'Cannot import: the file is not valid JSON.'; }
     } });
     const fileIn = h('input', { type: 'file', accept: 'application/json,.json', 'aria-label': 'Import a progress file', hidden: true, onchange: async (e: Event) => {
       const f = (e.target as HTMLInputElement).files?.[0]; if (!f) return;
@@ -50,8 +49,8 @@ export function progressPage(): HTMLElement {
           h('button', { type: 'button', onclick: () => { state.profile = { ...state.profile, name: name.value.trim() }; void setProfile(state.profile); announce('Name saved'); msg.textContent = 'Saved.'; } }, 'Save name'),
           h('button', { type: 'button', class: 'primary', onclick: async () => { download(`accounting-universe-${(state.profile.name || 'progress').replace(/[^\w-]+/g, '_')}.json`, JSON.stringify(await exportAll(), null, 2), 'application/json'); msg.textContent = 'Downloaded. Give this file to your teacher if they ask for it.'; } }, '⬇ Export my progress'),
           h('button', { type: 'button', onclick: () => fileIn.click() }, '⬆ Check a progress file'), fileIn,
-          h('button', { type: 'button', class: 'danger', onclick: async () => { if (confirm('Delete ALL your progress on this device? This cannot be undone.')) { await resetAll(); announce('Progress deleted'); void draw(); } } }, 'Delete my progress')), msg));
+          h('button', { type: 'button', class: 'danger', onclick: async () => { if (confirm('Delete ALL your progress on this device? This cannot be undone.')) { await resetAll(); announce('Progress deleted'); res.reload(); } } }, 'Delete my progress')), msg));
   }
-  void draw();
+  const res = loadInto(root, async () => ({ a: await attempts(), s: await seen(), asg: (await assignmentsAll()) as unknown as Assignment[] }), d => view(d.a, d.s, d.asg), 'your progress');
   return root;
 }

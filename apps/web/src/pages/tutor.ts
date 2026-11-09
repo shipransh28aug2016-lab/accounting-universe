@@ -1,3 +1,6 @@
+import { Machine } from '../../../../packages/engine/src';
+import { AI_ASK } from '../../../../packages/curriculum/src';
+import { onDispose, track, unregister } from '../machine-dom';
 import { CLAUSES, mistakeTally, SKILLS } from '../../../../packages/curriculum/src';
 import { h, mount } from '../dom';
 import { ALL_LABS, LEDGER_LAB } from '../labs';
@@ -41,21 +44,29 @@ function aiPanel(): HTMLElement {
   const labSel = h('select', { id: 'ailab' }, ...ALL_LABS.map(l => h('option', { value: l.id }, `Class ${l.cls} · ${l.title}`)));
   const mode = h('select', { id: 'aimode' }, h('option', { value: 'hint' }, 'Give me a hint (no answer)'), h('option', { value: 'explain' }, 'Explain the worked example'));
   const q = h('textarea', { id: 'aiq', rows: 3, maxlength: 500, placeholder: 'What are you stuck on?' });
-  const out = h('div', { 'aria-live': 'polite' });
+  const out = h('div', { 'aria-live': 'polite' }), am = new Machine(AI_ASK, { hasQuestion: false });
+  onDispose(() => unregister(am));
   const ask = async () => {
     const lab = ALL_LABS.find(l => l.id === labSel.value)!;
-    if (!q.value.trim()) { mount(out, h('p', { class: 'note warn', role: 'alert' }, 'Type your question first.')); return; }
-    mount(out, loading('Thinking…'));
+    am.ctx.hasQuestion = !!q.value.trim();
+    const sent = am.send('ASK');                                          // refused: empty question, or already asking
+    if (!sent.ok) { mount(out, h('p', { class: 'note warn', role: 'alert' }, sent.reason!)); return; }
+    askBtn.disabled = true; mount(out, loading('Thinking…'));
     try {
       const facts = blocksToFacts(runLabFacts(lab));
       const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 20000);
       const r = await fetch(TUTOR_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, signal: ctl.signal, body: JSON.stringify({ question: q.value.trim(), facts, chapter: lab.title, mode: mode.value, lang: state.lang }) });
       clearTimeout(t);
       const j = (await r.json()) as { text?: string; error?: string; withheld?: boolean };
+      am.send(j.text ? (j.withheld ? 'WITHHOLD' : 'RESOLVE') : 'REJECT');
       mount(out, j.text ? h('div', { class: 'note ' + (j.withheld ? 'warn' : 'info') }, j.text) : h('p', { class: 'note warn', role: 'alert' }, (j.error ?? 'The tutor could not answer.') + ' You can still use the search and rule cards below.'));
-    } catch { mount(out, h('p', { class: 'note warn', role: 'alert' }, 'The tutor is not reachable (you may be offline). The search and rule cards below still work.')); }
+    } catch { am.send('REJECT'); mount(out, h('p', { class: 'note warn', role: 'alert' }, 'The tutor is not reachable (you may be offline). The search and rule cards below still work.')); }
+    finally { askBtn.disabled = false; }
   };
-  return h('section', { class: 'panel' }, h('h3', {}, 'Ask the AI tutor'), h('div', { class: 'field' }, h('label', { for: 'ailab' }, 'About which lab?'), labSel), h('div', { class: 'field' }, h('label', { for: 'aimode' }, 'What do you want?'), mode), h('div', { class: 'field' }, h('label', { for: 'aiq' }, 'Your question'), q), h('button', { type: 'button', class: 'primary', onclick: () => { void ask(); } }, 'Ask'), out);
+  const askBtn = h('button', { type: 'button', class: 'primary', onclick: () => { void ask(); } }, 'Ask');
+  const panel = h('section', { class: 'panel' }, h('h3', {}, 'Ask the AI tutor'), h('div', { class: 'field' }, h('label', { for: 'ailab' }, 'About which lab?'), labSel), h('div', { class: 'field' }, h('label', { for: 'aimode' }, 'What do you want?'), mode), h('div', { class: 'field' }, h('label', { for: 'aiq' }, 'Your question'), q), askBtn, out);
+  track(panel, am);
+  return panel;
 }
 
 export function tutorPage(): HTMLElement {

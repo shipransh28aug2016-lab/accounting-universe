@@ -28,10 +28,10 @@
 
 ## Current results (run locally 2026-11-07)
 
-* Engine: **209 tests** (9 files); mutation checks **25/25** (`test/mutation-check.py`) and **10/10** on the later calculators (`test/mutation-extras.py`).
-* Curriculum: **241 tests** (5 files) incl. 1,500-seed checks of 30 question generators, concept-card integrity, registry-vs-syllabus, rescue / assignment / heat-map logic.
-* Tutor proxy: **9 tests** (`node --test`) against a mock upstream — key never returned, output guard, limits, CORS.
-* Web: `tsc` clean; `e2e/web-app.cjs` **260/260**; `e2e/web-app-extra.cjs` **54/54** (cards, trainer, CAS end-to-end, project, rescue, assignments, heat-map, Option II, 11 known-value spot checks).
+* Engine: **222 tests** (10 files) incl. the `Machine` kit (property test: 10,000 random events) and the journal-entry lifecycle; mutation checks **25/25** (`test/mutation-check.py`) and **10/10** on the later calculators (`test/mutation-extras.py`).
+* Curriculum: **271 tests** (7 files) incl. every state machine (validity, random walks, scenarios with the exact user-facing messages), the route table vs the old router as an oracle, and a test that fails if `docs/STATE_MACHINES.md` is stale.
+* Tutor proxy: **12 tests** (`node --test`) against a mock upstream — key never returned, output guard, limits incl. fake-clock day rollover and idle-client eviction, CORS.
+* Web: `tsc` clean; browser suites `web-app` **260**, `web-app-extra` **54**, `web-app-states` **51** (states readable, refusals explained, timer-leak/double-submit/storage-banner regressions), `web-app-tutor` **8** (panel ↔ real proxy ↔ mock upstream).
 * Legacy: `e2e/legacy-simulator-regression.cjs` 14/14; `e2e/legacy-smoke.cjs` 12/12.
 * All of the above in one command: `tools/check-all.sh`.
 

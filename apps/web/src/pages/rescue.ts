@@ -3,12 +3,11 @@ import { h, mount } from '../dom';
 import { attempts, seen } from '../store';
 import { state } from '../state';
 import { hrefOf, labsOfClause } from '../labs';
-import { loading } from '../ui';
+import { loadInto } from '../async';
 
 export function rescuePage(clause?: string): HTMLElement {
-  const root = h('div', { class: 'rescue' }, loading('Loading your plan…'));
-  void (async () => {
-    const [a, s] = [await attempts(), await seen()];
+  const root = h('div', { class: 'rescue' });
+  loadInto(root, async () => ({ a: await attempts(), s: await seen() }), ({ a, s }) => {
     const cls = state.profile.cls;
     if (clause && clauseById(clause)) {
       const plan = rescuePlan({ clause, labs: labsOfClause(clause), attempts: a, seen: s, hrefForLab: hrefOf });
@@ -22,6 +21,6 @@ export function rescuePage(clause?: string): HTMLElement {
     mount(root, h('header', { class: 'labhead' }, h('p', { class: 'eyebrow' }, 'Rescue plan'), h('h2', {}, 'Where to start'), h('p', { class: 'lead' }, 'Struggling topics come first, then topics you have not started. Each topic has five levels: Understand → Observe → Guided practice → Error correction → Independent mastery.')),
       order.length === 0 ? h('p', { class: 'empty' }, 'Every topic is at the top level. Nothing to rescue!') : h('div', { class: 'cards' }, ...order.map(id => { const r = sum.find(x => x.clause === id)!; return h('a', { class: 'card', href: `#/rescue/${id}` }, h('h3', {}, clauseById(id)?.title ?? id), h('p', {}, r.weak ? `Needs help — ${Math.round((r.accuracy ?? 0) * 100)}% on recent attempts` : r.level === 0 ? 'Not started' : `Level ${r.level}: ${LEVELS[r.level]}`), h('span', { class: `lvl l${r.level}` }, `Level ${r.level}`)); })));
     void CLAUSES;
-  })();
+  }, 'your rescue plan');
   return root;
 }

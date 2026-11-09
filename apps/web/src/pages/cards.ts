@@ -1,3 +1,6 @@
+import { Machine } from '../../../../packages/engine/src';
+import { CARD_CHECK } from '../../../../packages/curriculum/src';
+import { onDispose, track, unregister } from '../machine-dom';
 import { CARDS, UNITS, type Card } from '../../../../packages/curriculum/src';
 import { h, mount } from '../dom';
 import { recordAttempt, recordSeen } from '../store';
@@ -21,14 +24,15 @@ export function cardPage(card: Card): HTMLElement {
   const drawBody = () => mount(body, ...(lang === 'en' ? card.en : card.hi).map(p => h('p', {}, p)));
   const related = labsOfClause(card.clause).filter(x => !isCard(x));
   card.checks.forEach((k, qi) => {
-    const name = `q${qi}`, out = h('div', { 'aria-live': 'polite' });
+    const name = `q${qi}`, out = h('div', { 'aria-live': 'polite' }), cm = new Machine(CARD_CHECK, { hasChoice: false });
     const form = h('form', { class: 'check', onsubmit: (e: Event) => {
       e.preventDefault();
-      if (answered.has(qi)) return;
       const sel = form.querySelector<HTMLInputElement>(`input[name=${name}]:checked`);
-      if (!sel) { mount(out, h('p', { class: 'note warn', role: 'alert' }, 'Choose an answer first.')); return; }
-      const ok = Number(sel.value) === k.answer; answered.add(qi);
-      void recordAttempt({ t: Date.now(), skill: `card:${card.id}`, clause: card.clause, seed: qi + 1, mode: 'BEGINNER', marks: ok ? 1 : 0, outOf: 1, hintsUsed: 0, mistakes: ok ? [] : [`${card.title}: chose “${k.options[Number(sel.value)]}”`], correctParts: ok ? 1 : 0, parts: 1 });
+      cm.ctx.hasChoice = !!sel;
+      const sent = cm.send('ANSWER');                                    // refused: no choice yet, or already answered
+      if (!sent.ok) { mount(out, h('p', { class: 'note warn', role: 'alert' }, sent.reason!)); return; }
+      const ok = Number(sel!.value) === k.answer; answered.add(qi);
+      void recordAttempt({ t: Date.now(), skill: `card:${card.id}`, clause: card.clause, seed: qi + 1, mode: 'BEGINNER', marks: ok ? 1 : 0, outOf: 1, hintsUsed: 0, mistakes: ok ? [] : [`${card.title}: chose “${k.options[Number(sel!.value)]}”`], correctParts: ok ? 1 : 0, parts: 1 });
       if (answered.size === card.checks.length) void recordSeen({ lab: `card:${card.id}`, tab: 'example', t: Date.now() });
       for (const i of Array.from(form.querySelectorAll('input'))) (i as HTMLInputElement).disabled = true;
       mount(out, h('p', { class: 'note ' + (ok ? 'good' : 'bad'), role: 'status' }, ok ? '✓ Correct. ' : `Not quite — the answer is “${k.options[k.answer]}”. `, k.why));
@@ -36,6 +40,7 @@ export function cardPage(card: Card): HTMLElement {
     } },
       h('fieldset', {}, h('legend', {}, `${qi + 1}. ${k.q}`), ...k.options.map((o, oi) => h('label', { class: 'radio' }, h('input', { type: 'radio', name, value: oi }), ' ', o))),
       h('button', { type: 'submit' }, 'Check'), out);
+    track(form, cm); onDispose(() => unregister(cm));
     checks.append(form);
   });
   drawBody();
