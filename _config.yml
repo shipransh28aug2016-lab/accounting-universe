@@ -1,0 +1,15 @@
+# GitHub Pages (Jekyll) settings. The site is the static index.html at the repo root; everything else is source code and tooling.
+# The symlink packages/curriculum/node_modules points at ../engine/node_modules, which does not exist on the Pages build machine
+# and made Jekyll fail with "No such file or directory @ rb_check_realpath_internal" — so it (and all node_modules) are excluded.
+exclude:
+  - node_modules
+  - packages/curriculum/node_modules
+  - packages/engine/node_modules
+  - apps/web/node_modules
+  - apps/tutor-proxy/node_modules
+  - packages
+  - apps
+  - e2e
+  - tools
+  - AGENTS.md
+  - "*.test.*"
