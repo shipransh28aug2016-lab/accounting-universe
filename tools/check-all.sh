@@ -9,5 +9,7 @@ echo "== web build";   (cd apps/web && npm run build)
 export NODE_PATH="$(npm root -g)"
 echo "== browser: web app";   node e2e/web-app.cjs
 echo "== browser: web app (extra)"; node e2e/web-app-extra.cjs
+echo "== browser: state machines"; node e2e/web-app-states.cjs
+echo "== browser: tutor panel ↔ proxy (mock upstream)"; node e2e/web-app-tutor.cjs
 echo "== browser: legacy";    node e2e/legacy-smoke.cjs && node e2e/legacy-simulator-regression.cjs
 echo "ALL CHECKS PASSED"

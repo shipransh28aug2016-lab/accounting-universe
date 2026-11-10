@@ -127,3 +127,8 @@ fieldset { border: 1px solid var(--line); border-radius: 10px; margin: 0 0 .8rem
 table.inputs td { white-space: pre-line; }
 .cas .formgrid { grid-template-columns: minmax(14rem, 18rem) 1fr; } @media (max-width: 560px) { .cas .formgrid { grid-template-columns: 1fr; } }
 .eqempty { text-align: center; color: var(--muted); font-style: italic; padding: 1rem; border: 1px dashed var(--line); border-radius: 8px; }
+
+/* ── state-machine UX: unavailable actions explain themselves; storage banner ── */
+.unavailable { opacity: .6; cursor: help; } .unavailable:hover { border-color: var(--muted) !important; }
+.why { color: var(--muted); font-size: .88rem; margin: .2rem 0; } .why b { color: var(--ink); }
+.banner { background: var(--warn-bg); color: var(--ink); border-bottom: 3px solid var(--warn); padding: .6rem 1rem; text-align: center; } .banner[hidden] { display: none; }

@@ -1,3 +1,6 @@
+import { Machine } from '../../../../packages/engine/src';
+import { LAB_RUN } from '../../../../packages/curriculum/src';
+import { onDispose, track, unregister } from '../machine-dom';
 import { clauseById } from '../../../../packages/curriculum/src';
 import { h, mount } from '../dom';
 import { renderBlocks } from '../render';
@@ -53,11 +56,12 @@ export function labPage(lab: Lab, startTab: Tab = 'learn'): HTMLElement {
       h('div', { class: 'actions' }, h('button', { type: 'button', class: 'primary', onclick: () => select('try') }, 'Now try your own numbers →')));
   }
   function tryIt() {
-    const out = h('div', { class: 'result', 'aria-live': 'polite' });
+    const out = h('div', { class: 'result', 'aria-live': 'polite' }), lm = new Machine(LAB_RUN);
+    track(out, lm); onDispose(() => unregister(lm));
     const run = () => {
       for (const el of Array.from(form.querySelectorAll('[aria-invalid]'))) el.removeAttribute('aria-invalid');
       const r = runLab(lab, values);
-      mount(out, r.node);
+      mount(out, r.node); lm.send(r.error ? 'RUN_ERROR' : 'RUN_OK');        // data-state on .result: IDLE | OK | ERROR
       if (r.error?.field) { const el = form.querySelector(`#f-${r.error.field}`); el?.setAttribute('aria-invalid', 'true'); }
     };
     const fields: HTMLElement[] = [];
@@ -76,7 +80,7 @@ export function labPage(lab: Lab, startTab: Tab = 'learn'): HTMLElement {
     return wrap;
   }
   function select(t: Tab) {
-    current = t;
+    current = t; root.setAttribute('data-tab', t);
     for (const [id, b] of tabBtns) { b.setAttribute('aria-selected', String(id === t)); b.tabIndex = id === t ? 0 : -1; }
     mount(panel, t === 'learn' ? learn() : t === 'example' ? example() : tryIt());
     panel.setAttribute('aria-labelledby', `tab-${t}`);

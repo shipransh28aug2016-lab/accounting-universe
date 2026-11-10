@@ -10,6 +10,7 @@
  */
 import http from 'node:http';
 import { checkReply } from './guard.mjs';
+import { createLimiter } from './limits.mjs';
 
 const LIMITS = { question: 500, factLines: 60, factLen: 300, chapter: 120 };
 export const SYSTEM = (chapter, mode, lang) => `You are a patient CBSE Class XI/XII Accountancy tutor inside a learning app. Rules you must follow:
@@ -33,8 +34,8 @@ export function validate(body) {
 
 export function createServer(env = process.env, fetchImpl = fetch) {
   const key = env.ANTHROPIC_API_KEY, model = env.TUTOR_MODEL || 'claude-haiku-5-5', maxTokens = Number(env.TUTOR_MAX_TOKENS || 400);
-  const rph = Number(env.TUTOR_RPH || 20), dailyCap = Number(env.TUTOR_DAILY_CAP || 500), base = env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com';
-  const hits = new Map(); let day = new Date().toDateString(), today = 0;
+  const base = env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com';
+  const limiter = createLimiter({ rph: Number(env.TUTOR_RPH || 20), dailyCap: Number(env.TUTOR_DAILY_CAP || 500) });
   const cors = h => { if (env.TUTOR_ORIGIN) { h['access-control-allow-origin'] = env.TUTOR_ORIGIN; h['access-control-allow-headers'] = 'content-type'; h['access-control-allow-methods'] = 'POST, OPTIONS'; h['vary'] = 'origin'; } return h; };
   const send = (res, code, obj) => { res.writeHead(code, cors({ 'content-type': 'application/json', 'cache-control': 'no-store' })); res.end(JSON.stringify(obj)); };
 
@@ -48,11 +49,8 @@ export function createServer(env = process.env, fetchImpl = fetch) {
       let body; try { body = JSON.parse(raw); } catch { return send(res, 400, { error: 'Invalid JSON.' }); }
       const bad = validate(body); if (bad) return send(res, 400, { error: bad });
       // cost controls: per-IP hourly limit and a global daily ceiling
-      const now = Date.now(), ip = req.socket.remoteAddress ?? 'x', list = (hits.get(ip) ?? []).filter(t => now - t < 3_600_000);
-      if (new Date().toDateString() !== day) { day = new Date().toDateString(); today = 0; }
-      if (list.length >= rph) return send(res, 429, { error: 'Too many questions this hour. Try again later.' });
-      if (today >= dailyCap) return send(res, 429, { error: 'The tutor has reached its daily limit. Everything else in the app still works.' });
-      list.push(now); hits.set(ip, list); today++;
+      const gate = limiter.check(req.socket.remoteAddress ?? 'x');           // per-IP hourly limit + global daily ceiling
+      if (!gate.ok) return send(res, gate.status, { error: gate.error });
       const up = await fetchImpl(`${base}/v1/messages`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({ model, max_tokens: maxTokens, system: SYSTEM(clip(body.chapter, LIMITS.chapter), body.mode, body.lang === 'hi' ? 'hi' : 'en'),
           messages: [{ role: 'user', content: `FACTS from the accounting engine (authoritative):\n${body.facts.map(f => `- ${f}`).join('\n')}\n\nStudent's question: ${body.question}` }] }) });

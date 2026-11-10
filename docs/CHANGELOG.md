@@ -25,6 +25,17 @@
   ran on zeros. Types now come from `AcctEngine.classify`; pre-fix sessions are rebuilt from the journal;
   the M1 mirror no longer leaves stale balances.
 
+### Explicit state machines (inventory + refactor, no behaviour removed)
+- `Machine` kit in the engine (`machine.ts`: interpreter, `validateSpec`, `reachable`, `toMermaid`); 12 app machines declared as data in
+  `packages/curriculum/src/machines.ts`; the ledger's reversal rule is now the `journal-entry` machine (same error texts, new `entryStatus()`).
+- UI wired to them: ledger player, practice question, trainer, card checks, lab result, AI ask, CAS voucher + year, async pages, storage, boot/network.
+  Everything is readable from the page (`data-machine`/`data-state`, `<html data-app data-net>`, `window.__AU__`).
+- One route table replaces the duplicated router/header logic (proved equal to the old behaviour on 29 paths).
+- `docs/STATE_MACHINES.md` (generated, test-enforced), `AGENTS.md`, `e2e/web-app-states.cjs`, `e2e/web-app-tutor.cjs`.
+- Fixed while doing it: ledger timer kept running after leaving the page; Play dead after the story ended; hints clickable after answering;
+  spinner could hang forever on a failed load; no warning when progress could not be saved; a Viewer could start the next year;
+  forfeiture accepted with nothing unpaid; proxy limiter never evicted idle clients and its day rollover was untested.
+
 ### Completion pass (all syllabus topics now have a lab, a page or a concept card)
 - Engine v0.3 (`extras.ts`, 209 tests, 10/10 mutants killed): calls in advance, two-column cash book, subsidiary books with
   GST, provision for doubtful debts / discount, reserve transfer, opening entry, exact loan/EMI schedule, Schedule III totals,

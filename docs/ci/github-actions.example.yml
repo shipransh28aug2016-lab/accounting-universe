@@ -15,4 +15,6 @@ jobs:
       - run: npx playwright install --with-deps chromium && npm i -g playwright http-server
       - run: NODE_PATH="$(npm root -g)" node e2e/web-app.cjs
       - run: NODE_PATH="$(npm root -g)" node e2e/web-app-extra.cjs
+      - run: NODE_PATH="$(npm root -g)" node e2e/web-app-states.cjs
+      - run: NODE_PATH="$(npm root -g)" node e2e/web-app-tutor.cjs
       - run: NODE_PATH="$(npm root -g)" node e2e/legacy-smoke.cjs && NODE_PATH="$(npm root -g)" node e2e/legacy-simulator-regression.cjs

@@ -5,3 +5,4 @@ export * from './progress';
 export * from './cards';
 export * from './rescue';
 export * from './assignments';
+export * from './machines';

@@ -1,3 +1,6 @@
+import { Machine } from '../../../../packages/engine/src';
+import { TRAINER_ROUND } from '../../../../packages/curriculum/src';
+import { onDispose, track, unregister } from '../machine-dom';
 import { starterChartClassXI, type Side } from '../../../../packages/engine/src';
 import { h, mount } from '../dom';
 import { recordAttempt, recordSeen } from '../store';
@@ -26,25 +29,26 @@ const QS: Q[] = [
 export function trainerPage(): HTMLElement {
   const chart = starterChartClassXI();
   const order = [...QS].sort(() => Math.random() - 0.5);
-  let i = 0, score = 0, answered = false;
+  let i = 0, score = 0;
   const root = h('div', { class: 'trainer' });
+  const tm = new Machine(TRAINER_ROUND, { hasBoth: false });          // ASKING → ANSWERED → (ASKING | COMPLETE)
+  track(root, tm); onDispose(() => unregister(tm));
   void recordSeen({ lab: 'xi-trainer', tab: 'learn', t: Date.now() });
   const opts = (sel: HTMLSelectElement) => { sel.append(h('option', { value: '' }, '— choose —'), ...chart.list().map(a => h('option', { value: a.id }, `${a.name} (${TYPE_WORD[a.type]})`))); return sel; };
 
   function draw() {
     if (i >= order.length) {
       mount(root, head(), h('section', { class: 'panel' }, h('h3', {}, 'Round complete'), h('p', { class: 'lead' }, `You got ${score} of ${order.length} fully right.`), h('p', {}, score === order.length ? 'Excellent — now try the Journal → Ledger page with your own entries.' : 'Open the lab’s rule cards again and retry the ones you missed.'),
-        h('div', { class: 'actions' }, h('button', { type: 'button', class: 'primary', onclick: () => { order.sort(() => Math.random() - 0.5); i = 0; score = 0; draw(); } }, 'Play again'), h('a', { class: 'button', href: '#/ledger' }, 'Open the Ledger lab'))));
+        h('div', { class: 'actions' }, h('button', { type: 'button', class: 'primary', onclick: () => { tm.send('AGAIN'); order.sort(() => Math.random() - 0.5); i = 0; score = 0; draw(); } }, 'Play again'), h('a', { class: 'button', href: '#/ledger' }, 'Open the Ledger lab'))));
       return;
     }
-    answered = false;
     const q = order[i]!;
     const dr = opts(h('select', { id: 'dr' })), cr = opts(h('select', { id: 'cr' }));
-    const out = h('div', { 'aria-live': 'polite' }), next = h('button', { type: 'button', class: 'primary', hidden: true, onclick: () => { i++; draw(); } }, i + 1 === order.length ? 'Finish' : 'Next →');
+    const out = h('div', { 'aria-live': 'polite' }), next = h('button', { type: 'button', class: 'primary', hidden: true, onclick: () => { tm.send(i + 1 >= order.length ? 'FINISH' : 'NEXT'); i++; draw(); } }, i + 1 === order.length ? 'Finish' : 'Next →');
     const check = () => {
-      if (answered) return;
-      if (!dr.value || !cr.value) { mount(out, h('p', { class: 'note warn', role: 'alert' }, 'Choose an account for both the debit and the credit side.')); return; }
-      answered = true;
+      tm.ctx.hasBoth = !!(dr.value && cr.value);
+      const sent = tm.send('ANSWER');                                    // refused: nothing chosen yet, or already answered
+      if (!sent.ok) { mount(out, h('p', { class: 'note warn', role: 'alert' }, sent.reason!)); return; }
       const okDr = dr.value === q.dr, okCr = cr.value === q.cr, ok = okDr && okCr;
       if (ok) score++;
       const mistakes: string[] = [];

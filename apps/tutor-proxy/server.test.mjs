@@ -63,3 +63,22 @@ test('CORS is closed unless an origin is configured', async () => {
   await withServer({ ANTHROPIC_API_KEY: 'k' }, ok('Fine, 8,000.'), async ({ post }) => { assert.equal((await post(body())).headers.get('access-control-allow-origin'), null); });
   await withServer({ ANTHROPIC_API_KEY: 'k', TUTOR_ORIGIN: 'https://school.example' }, ok('Fine, 8,000.'), async ({ post }) => { assert.equal((await post(body())).headers.get('access-control-allow-origin'), 'https://school.example'); });
 });
+
+import { createLimiter } from './limits.mjs';
+test('limiter: hourly window slides; each client is separate', () => {
+  let t = Date.UTC(2026, 10, 9, 10, 0, 0); const L = createLimiter({ rph: 2, dailyCap: 100, now: () => t });
+  assert.equal(L.check('a').ok, true); assert.equal(L.check('a').ok, true);
+  const third = L.check('a'); assert.equal(third.ok, false); assert.equal(third.reason, 'IP_THROTTLED'); assert.equal(L.check('b').ok, true);
+  t += 3_600_001; assert.equal(L.check('a').ok, true);                                   // the first two aged out
+});
+test('limiter: the daily ceiling resets at UTC midnight (previously untested)', () => {
+  let t = Date.UTC(2026, 10, 9, 23, 59, 0); const L = createLimiter({ rph: 100, dailyCap: 2, now: () => t });
+  L.check('a'); L.check('b'); const capped = L.check('c'); assert.equal(capped.ok, false); assert.equal(capped.reason, 'DAILY_CAP');
+  t += 2 * 60_000; assert.equal(L.check('c').ok, true); assert.equal(L.stats().day, '2026-11-10');
+});
+test('limiter: idle clients are swept so memory cannot grow without bound', () => {
+  let t = 0; const L = createLimiter({ rph: 5, dailyCap: 1_000_000, now: () => t });
+  for (let i = 0; i < 150; i++) L.check('ip' + i);
+  t += 2 * 3_600_000; for (let i = 0; i < 100; i++) L.check('fresh' + i);                 // crosses the 200-call sweep
+  assert.ok(L.stats().clients <= 101, `clients=${L.stats().clients}`);
+});

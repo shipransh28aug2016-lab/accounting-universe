@@ -1,6 +1,7 @@
 import { type Account, type ChartOfAccounts, type Side, normalSide } from './accounts';
 import { type DraftEntry, EntryValidationError, type PostedEntry, validateEntry } from './journal';
 import { Money } from './money';
+import { check, type MachineSpec } from './machine';
 
 export class LedgerError extends Error {
   constructor(message: string) {
@@ -8,6 +9,26 @@ export class LedgerError extends Error {
     this.name = 'LedgerError';
   }
 }
+
+
+// ───────────────────────── entry lifecycle (explicit state machine) ─────────────────────────
+export type EntryStatus = 'POSTED' | 'REVERSED' | 'REVERSAL';
+export type EntryLifecycleState = 'NEW' | EntryStatus;
+export type EntryLifecycleEvent = 'POST' | 'POST_AS_REVERSAL' | 'REVERSE';
+export interface EntryLifecycleContext { readonly id: string; readonly reversedBy?: string }
+/**
+ * The life of one journal entry. A posted entry is frozen; the ONLY thing that can happen to it is a single linked reversal.
+ * A reversal entry is itself final — you cannot reverse a reversal (post a new entry instead). Error texts are user-facing.
+ */
+export const ENTRY_LIFECYCLE: MachineSpec<EntryLifecycleState, EntryLifecycleEvent, EntryLifecycleContext> = {
+  id: 'journal-entry', doc: 'One journal entry in the ledger: posted once, optionally reversed once, never edited or deleted.', initial: 'NEW',
+  states: {
+    NEW: { doc: 'Being created inside Ledger.post / Ledger.reverse.', on: { POST: 'POSTED', POST_AS_REVERSAL: 'REVERSAL' } },
+    POSTED: { doc: 'Frozen in the journal. Counts in every balance.', on: { REVERSE: 'REVERSED' } },
+    REVERSED: { doc: 'Cancelled by a linked reversal entry. Stays in the journal for the audit trail.', final: true, blocked: { REVERSE: c => `${c.id} was already reversed by ${c.reversedBy ?? 'another entry'}` } },
+    REVERSAL: { doc: 'An entry that cancels another entry. Final: a reversal cannot itself be reversed.', final: true, blocked: { REVERSE: c => `${c.id} is itself a reversal and cannot be reversed` } },
+  },
+};
 
 export interface AuditEvent {
   readonly seq: number;
@@ -75,9 +96,9 @@ export class Ledger {
   reverse(entryId: string, opts: { date: string; reason: string }): PostedEntry {
     const original = this.journal.find(e => e.id === entryId);
     if (!original) throw new LedgerError(`No such entry "${entryId}"`);
-    if (original.reversalOf) throw new LedgerError(`${entryId} is itself a reversal and cannot be reversed`);
-    const already = this.reversed.get(entryId);
-    if (already) throw new LedgerError(`${entryId} was already reversed by ${already}`);
+    const ctx: EntryLifecycleContext = { id: entryId, ...(this.reversed.has(entryId) ? { reversedBy: this.reversed.get(entryId)! } : {}) };
+    const verdict = check(ENTRY_LIFECYCLE, this.entryStatus(entryId)!, 'REVERSE', ctx);
+    if (!verdict.ok) throw new LedgerError(verdict.reason!);
     if (!opts.reason.trim()) throw new LedgerError('A reversal needs a reason');
 
     const lines = original.lines.map(l => ({ accountId: l.accountId, side: (l.side === 'DR' ? 'CR' : 'DR') as Side, amount: l.amount }));
@@ -109,6 +130,11 @@ export class Ledger {
   entries(): readonly PostedEntry[] { return this.journal; }
   auditTrail(): readonly AuditEvent[] { return this.trail; }
   isReversed(entryId: string): boolean { return this.reversed.has(entryId); }
+  /** Where an entry is in its lifecycle (undefined if there is no such entry). */
+  entryStatus(entryId: string): EntryStatus | undefined {
+    const e = this.journal.find(x => x.id === entryId);
+    return !e ? undefined : e.reversalOf ? 'REVERSAL' : this.reversed.has(entryId) ? 'REVERSED' : 'POSTED';
+  }
 
   /** Net debit position in paise: Σ debits − Σ credits (positive = net debit). */
   private net(accountId: string): bigint {

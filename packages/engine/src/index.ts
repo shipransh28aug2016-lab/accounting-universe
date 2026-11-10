@@ -11,3 +11,4 @@ export * from './finalAccounts';
 export * from './analysis';
 export * from './cashflow';
 export * from './extras';
+export * from './machine';
