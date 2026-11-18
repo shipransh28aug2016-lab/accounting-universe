@@ -12,6 +12,12 @@
 - Tests: `e2e/web-app-polish.cjs` (54 checks incl. axe and 390/360/320 px); existing tests updated only where the change is intended (nav label, Display menu, labs list needs "Both classes").
 - Left in place, now unused: `apps/web/src/experience/heroScene.ts` (deleting it needs your approval).
 
+### Phase 2 of the professional-site plan: one language switch
+- The header button now switches the whole app, not just practice: `<html lang>` follows it, and the header, navigation, home page, labs index (incl. unit titles), class map and practice screens are in Devanagari (draft, unreviewed). 113 new strings in the existing EN/HI catalogue (key parity and Devanagari tests extended).
+- **One** "Hindi draft, not yet reviewed" notice for the whole app (it used to repeat on every question block).
+- Content that has no Hindi version yet (lab names and explanations, syllabus topic titles, non-V1 questions) stays English, is marked `lang="en"` for screen readers, and every page that is not translated (ledger, progress, teacher, labs, help, trainer, cards, projects, simulator) opens with a Hindi "this page is English-only for now" notice.
+- Test: `e2e/web-app-lang.cjs` (65 checks): English unchanged, Hindi page chrome has no leftover English words (a text scan that skips only `lang="en"` content), single notice, English-only notices, remembered after reload, no sideways scroll at 390/360/320 px, axe in Hindi, switching back restores the exact English wording.
+
 ### GitHub Pages: one workflow, both apps
 - `deploy-pages.yml` is now the only Pages workflow: new app at `/`, old single-file app at `/legacy/` (`tools/assemble-site.mjs`). `static.yml` (uploaded the whole repo, including backup files, and raced the app deploy) is removed.
 - The service worker never answers `/legacy/`. Test: `e2e/web-app-site.cjs` (11 checks: legacy file byte-identical, no backups published, assembling without a build is refused, `/legacy/` reachable with the worker installed).

@@ -14,3 +14,17 @@ describe('V1 UI string catalogue (T0.4)', () => {
   });
   it('Hindi stays labelled as an unreviewed draft until a reviewer signs it off (D10)', () => { expect(HINDI_REVIEWED).toBe(false); });
 });
+
+describe('whole-app chrome strings (Phase 2)', () => {
+  it('every syllabus unit has a Hindi title', async () => {
+    const { UNITS } = await import('../src');
+    for (const u of UNITS) { expect(`unit.${u.id}` in EN, u.id).toBe(true); expect(EN[`unit.${u.id}` as keyof typeof EN], u.id).toBe(u.title); }
+  });
+  it('every navigation label has a translation under the same key the route table uses', async () => {
+    const { NAV } = await import('../../../apps/web/src/routes');
+    for (const n of NAV) { expect(EN[`nav.${n.key}` as keyof typeof EN], n.key).toBe(n.key); expect(HI[`nav.${n.key}` as keyof typeof HI], n.key).toMatch(/[ऀ-ॿ]/); }
+  });
+  it('the English side keeps the exact wording the app used before (tests and users rely on it)', () => {
+    expect(EN['home.start']).toBe('Start here: '); expect(EN['labs.count.n']).toBe('{n} labs shown'); expect(EN['ui.menu']).toBe('☰ Menu');
+  });
+});

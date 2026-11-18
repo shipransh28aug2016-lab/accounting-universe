@@ -8,7 +8,6 @@ apps/web/scripts/precache.mjs
 apps/web/src/async.ts
 apps/web/src/dom.ts
 apps/web/src/facts.ts
-apps/web/src/i18n.ts
 apps/web/src/inputs.ts
 apps/web/src/labs/common.ts
 apps/web/src/labs/company.ts

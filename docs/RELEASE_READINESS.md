@@ -42,6 +42,9 @@ Built and tested (13 unit tests with independent oracles, 35 browser checks incl
 rectification convention and the what-if answers (D11); the Hindi text is an unreviewed draft (D10); the 3D scale is decorative and was only checked in headless Chromium;
 classroom use with real students. Only one-sided posting errors in a single account are generated (no compound or two-sided errors, which need no Suspense).
 
+## Language switch (2026-11-18)
+One switch for the whole app is in and tested. Hindi pages: header, navigation, home, labs index, class map, practice screens, Crisis challenge and the six V1 skills. English-only (with a notice): ledger page, progress, teacher dashboard, lab pages, help, trainer, concept cards, rescue, projects, simulator, and the explanations inside labs. The Hindi is an **unreviewed draft** (D10). Concept cards still have their own Hinglish (Hindi in English letters) toggle.
+
 ## Not done / not verified (read before releasing)
 * **AI tutor is not live.** Code, guard and tests exist (`apps/tutor-proxy`) but it was never run against the real API, is not deployed, and needs your API key and a host (D4). The app works fully without it.
 * **No accounts, sync or central teacher view** (D5): teachers work from files students hand over. By design, nothing about minors leaves the device.

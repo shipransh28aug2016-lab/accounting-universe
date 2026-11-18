@@ -21,7 +21,6 @@ import {
 import { t, type Key } from '../../../../packages/curriculum/src/i18n';
 import { mountBalanceScale, type BalanceHandle } from '../experience/balanceScale';
 import { h, mount } from '../dom';
-import { hindiDraftNote } from '../i18n';
 import { icon } from '../icons';
 import { onDispose, track, unregister } from '../machine-dom';
 import { state } from '../state';
@@ -620,7 +619,7 @@ export function crisisPage(seedArg?: string): HTMLElement {
       idx >= 0 ? h('span', { class: 'chip', 'data-hud': 'step' }, T('crisis.step', { n: idx + 1 })) : null,
       h('span', { class: 'chip', 'data-hud': 'total' }, T('crisis.totalXp', { xp: saved.xp })),
     );
-    mount(body, hud, hi ? hindiDraftNote() : null, feedback, stepPanel(), h('div', { class: 'crisis-grid' }, trialBalance(), journal()));
+    mount(body, hud, feedback, stepPanel(), h('div', { class: 'crisis-grid' }, trialBalance(), journal()));
     updateScale();
     const focus = body.querySelector<HTMLElement>('.crisis-step input, .crisis-step select, .crisis-step button');
     if (feedback && focus && st !== 'CLEARED' && st !== 'FAILED') focus.focus({ preventScroll: true });

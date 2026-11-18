@@ -5,7 +5,8 @@ import { PRACTICE_QUESTION, type QuestionCtx, type QuestionEvent, type QuestionS
 import { register, track, unregister, onDispose } from '../machine-dom';
 import { icon } from '../icons';
 import { h, mount } from '../dom';
-import { hindiDraftNote } from '../i18n';
+import { tr } from '../i18n';
+import type { Key } from '../../../../packages/curriculum/src/i18n';
 import { attempts, recordAttempt } from '../store';
 import { announce } from '../ui';
 import { state } from '../state';
@@ -13,11 +14,7 @@ import { ALL_LABS } from '../labs';
 import { t } from '../../../../packages/curriculum/src/i18n';
 
 type Mode = 'BEGINNER' | 'PRACTICE' | 'BOARD';
-const MODES: { id: Mode; label: string; blurb: string }[] = [
-  { id: 'BEGINNER', label: 'Beginner', blurb: 'Hints and the worked steps are available, one at a time. Retry as often as you like.' },
-  { id: 'PRACTICE', label: 'Practice', blurb: 'Hints available (each one is recorded). One check, then see the full working.' },
-  { id: 'BOARD', label: 'Board', blurb: 'Exam conditions: no hints, one check, marks shown like a marking scheme.' },
-];
+const MODES: readonly Mode[] = ['BEGINNER', 'PRACTICE', 'BOARD'];
 
 export function practicePage(skillArg?: string, seedArg?: string, modeArg?: string): HTMLElement {
   const root = h('div', { class: 'practice' });
@@ -41,7 +38,10 @@ export function practicePage(skillArg?: string, seedArg?: string, modeArg?: stri
     const inputs: (HTMLInputElement | HTMLSelectElement)[] = [];
     // Hindi (draft) when chosen and available; otherwise English, and say so
     const hi = state.lang === 'hi' && q.hi ? q.hi : null, T = (en: string, k?: number, arr?: readonly string[]) => (hi && arr && k !== undefined && arr[k] ? arr[k]! : en);
-    const L = hi ? 'hi' as const : 'en' as const;
+    const L = state.lang;                                              // language of the page chrome (buttons, feedback lines)
+    const fb = state.lang === 'hi' && !hi;                              // a question that has no Hindi version yet: its own text stays English and is marked so
+    const qc = (x: string): string | HTMLElement => (fb ? h('span', { lang: 'en' }, x) : x);
+    const qlang = fb ? { lang: 'en' } : {};
     const stem = hi ? hi.stem : q.stem, hints = hi ? hi.hints : q.hints, working = hi ? hi.working : q.working;
     const optLabel = (k: number, o: string) => { const i = q.parts[k]!.options?.indexOf(o) ?? -1; return hi?.options?.[k]?.[i] ?? o; };
     const feedback = h('div', { class: 'feedback', 'aria-live': 'polite' });
@@ -53,7 +53,7 @@ export function practicePage(skillArg?: string, seedArg?: string, modeArg?: stri
     const qm = new Machine(PRACTICE_QUESTION, { mode, hintsLeft: hints.length, stepsLeft: working.length });
     current = qm; register(qm);
 
-    const showWorking = (n: number) => mount(workBox, n > 0 ? h('ol', { class: 'walk', ...(hi ? { lang: 'hi' } : {}) }, ...working.slice(0, n).map(w => h('li', {}, w))) : null);
+    const showWorking = (n: number) => mount(workBox, n > 0 ? h('ol', { class: 'walk', ...(hi ? { lang: 'hi' } : qlang) }, ...working.slice(0, n).map(w => h('li', {}, w))) : null);
 
     const check = () => {
       if (qm.is('SUBMITTED')) { mount(feedback, h('p', { class: 'note warn', role: 'status' }, qm.why('SUBMIT_FINAL')!)); return; }     // an answer can never be recorded twice
@@ -86,22 +86,22 @@ export function practicePage(skillArg?: string, seedArg?: string, modeArg?: stri
       showWorking(working.length);
       mount(feedback,
         h('p', { class: 'note ' + (finished ? 'good' : 'warn'), role: 'status' }, `${t(L, finished ? 'practice.correct' : 'practice.notThisTime')} ${t(L, 'practice.scored', { marks, outOf: q.marks })}`),
-        ...rows.filter(r => !r.ok).map(r => h('div', { class: 'note bad' }, h('p', {}, h('b', {}, T(r.p.label, q.parts.indexOf(r.p), hi?.parts)), t(L, 'practice.youWrote'), (r.p.kind === 'CHOICE' ? optLabel(q.parts.indexOf(r.p), r.v) : r.v) || t(L, 'practice.blank'), t(L, 'practice.answerIs'), h('b', {}, r.p.kind === 'MONEY' ? Money.parse(r.p.answer).format() : r.p.kind === 'CHOICE' ? optLabel(q.parts.indexOf(r.p), r.p.answer) : r.p.answer), t(L, 'practice.end')), r.d ? h('p', {}, h('b', {}, r.d.mistake), ' ', r.d.fix) : null)));
+        ...rows.filter(r => !r.ok).map(r => h('div', { class: 'note bad' }, h('p', {}, h('b', {}, qc(T(r.p.label, q.parts.indexOf(r.p), hi?.parts))), t(L, 'practice.youWrote'), (r.p.kind === 'CHOICE' ? optLabel(q.parts.indexOf(r.p), r.v) : r.v) || t(L, 'practice.blank'), t(L, 'practice.answerIs'), h('b', {}, r.p.kind === 'MONEY' ? Money.parse(r.p.answer).format() : r.p.kind === 'CHOICE' ? optLabel(q.parts.indexOf(r.p), r.p.answer) : r.p.answer), t(L, 'practice.end')), r.d ? h('p', {}, h('b', {}, r.d.mistake), ' ', r.d.fix) : null)));
       announce(finished ? 'Correct' : 'Incorrect, see the working below');
     };
 
     const hintBtn = h('button', { type: 'button', onclick: () => {
       const r = qm.send('HINT'); if (!r.ok) { mount(hintBox, h('p', { class: 'hint' }, r.reason!)); return; }
       hintsShown++; qm.ctx.hintsLeft--; refresh();
-      mount(hintBox, h('ol', { class: 'hintlist', ...(hi ? { lang: 'hi' } : {}) }, ...hints.slice(0, hintsShown).map(t => h('li', {}, t))));
-    } }, icon('lightbulb', 16), ' Next hint');
+      mount(hintBox, h('ol', { class: 'hintlist', ...(hi ? { lang: 'hi' } : qlang) }, ...hints.slice(0, hintsShown).map(t => h('li', {}, t))));
+    } }, icon('lightbulb', 16), tr('prac.hint'));
     const stepBtn = h('button', { type: 'button', onclick: () => {
       const r = qm.send('STEP_SHOW'); if (!r.ok) { mount(workBox, h('p', { class: 'hint' }, r.reason!)); return; }
       stepsShown++; qm.ctx.stepsLeft--; refresh(); showWorking(stepsShown);
-    } }, icon('steps', 16), ' Show next step');
-    const nextBtn = h('button', { type: 'button', class: 'primary', hidden: true, onclick: () => { seed = Math.floor(Math.random() * 1_000_000); draw(); } }, 'Next question →');
+    } }, icon('steps', 16), tr('prac.step'));
+    const nextBtn = h('button', { type: 'button', class: 'primary', hidden: true, onclick: () => { seed = Math.floor(Math.random() * 1_000_000); draw(); } }, tr('prac.next'));
 
-    const submitBtn = h('button', { type: 'submit', class: 'primary' }, mode === 'BOARD' ? 'Submit answer' : 'Check');
+    const submitBtn = h('button', { type: 'submit', class: 'primary' }, tr(mode === 'BOARD' ? 'prac.submit' : 'prac.check'));
     /** Buttons follow the machine: after SUBMITTED only "Next" remains; unavailable help says why. */
     const refresh = () => {
       const done = qm.is('SUBMITTED');
@@ -111,26 +111,26 @@ export function practicePage(skillArg?: string, seedArg?: string, modeArg?: stri
     const partsUi = q.parts.map((p, i) => {
       const label = T(p.label, i, hi?.parts);
       const inp: HTMLInputElement | HTMLSelectElement = p.kind === 'CHOICE'
-        ? h('select', { id: `ans-${i}` }, h('option', { value: '' }, t(L, 'practice.choose')), ...(p.options ?? []).map(o => h('option', { value: o }, optLabel(i, o))))
+        ? h('select', { id: `ans-${i}` }, h('option', { value: '' }, t(L, 'practice.choose')), ...(p.options ?? []).map(o => h('option', { value: o, ...qlang }, optLabel(i, o))))
         : h('input', { type: 'text', id: `ans-${i}`, inputmode: p.kind === 'FRACTION' ? 'text' : 'decimal', autocomplete: 'off', placeholder: p.kind === 'FRACTION' ? 'e.g. 3/10' : p.kind === 'TEXT' ? 'type your answer' : t(L, 'practice.amount') });
       inputs.push(inp);
-      return h('div', { class: 'field' }, h('label', { for: `ans-${i}` }, `${label} `, h('span', { class: 'marks' }, hi ? `[${p.marks} अंक]` : `[${p.marks} mark${p.marks > 1 ? 's' : ''}]`)), inp, p.unit ? h('small', {}, p.unit) : null);
+      return h('div', { class: 'field' }, h('label', { for: `ans-${i}` }, qc(label), ' ', h('span', { class: 'marks' }, state.lang === 'hi' ? `[${p.marks} अंक]` : `[${p.marks} mark${p.marks > 1 ? 's' : ''}]`)), inp, p.unit ? h('small', {}, p.unit) : null);
     });
     qm.subscribe(() => refresh());
     mount(root,
-      h('header', { class: 'labhead' }, h('p', { class: 'eyebrow' }, `Class ${state.profile.cls}`), h('h2', {}, 'Practice'), h('p', { class: 'lead' }, 'Every question is made fresh and marked by the accounting engine. Wrong answers are explained, not just crossed out.')),
+      h('header', { class: 'labhead' }, h('p', { class: 'eyebrow' }, tr('ui.class', { cls: state.profile.cls })), h('h2', {}, tr('prac.h2')), h('p', { class: 'lead' }, tr('prac.lead'))),
       h('div', { class: 'practice-top' },
-        h('label', {}, 'Topic ', (() => { const s = h('select', { id: 'skillsel', onchange: (e: Event) => { skill = (e.target as HTMLSelectElement).value; seed = Math.floor(Math.random() * 1_000_000); draw(); } }, ...SKILLS.filter(x => x.clause.startsWith(state.profile.cls + '.')).map(x => h('option', { value: x.skill }, x.title))); s.value = skill; return s; })()),
-        h('div', { class: 'modes', role: 'radiogroup', 'aria-label': 'Mode' }, ...MODES.map(m => h('button', { type: 'button', role: 'radio', 'aria-checked': String(m.id === mode), class: m.id === mode ? 'on' : '', onclick: () => { mode = m.id; draw(); } }, m.label))),
-        h('button', { type: 'button', onclick: () => { void recommend(); } }, icon('target', 16), ' Pick what I should practise next')),
-      h('p', { class: 'hint' }, MODES.find(m => m.id === mode)!.blurb),
+        h('label', {}, tr('prac.topic'), (() => { const s = h('select', { id: 'skillsel', onchange: (e: Event) => { skill = (e.target as HTMLSelectElement).value; seed = Math.floor(Math.random() * 1_000_000); draw(); } }, ...SKILLS.filter(x => x.clause.startsWith(state.profile.cls + '.')).map(x => h('option', { value: x.skill, lang: 'en' }, x.title))); s.value = skill; return s; })()),
+        h('div', { class: 'modes', role: 'radiogroup', 'aria-label': tr('prac.mode') }, ...MODES.map(m => h('button', { type: 'button', role: 'radio', 'aria-checked': String(m === mode), class: m === mode ? 'on' : '', onclick: () => { mode = m; draw(); } }, tr(`prac.m.${m}` as Key)))),
+        h('button', { type: 'button', onclick: () => { void recommend(); } }, icon('target', 16), tr('prac.recommend'))),
+      h('p', { class: 'hint' }, tr(`prac.b.${mode}` as Key)),
       qArticle = h('article', { class: 'question' },
-        h('p', { class: 'eyebrow' }, `${q.clause} · ${q.marks} marks · ${t(L, `typology.${q.typology}`)}`), hi ? hindiDraftNote() : state.lang === 'hi' ? h('p', { class: 'note warn', lang: 'hi' }, t('hi', 'practice.noHindi')) : null, h('p', { class: 'stem', ...(hi ? { lang: 'hi' } : {}) }, stem),
+        h('p', { class: 'eyebrow' }, h('span', { lang: 'en' }, q.clause), ` · ${tr('ui.marks', { n: q.marks })} · ${t(L, `typology.${q.typology}`)}`), hi ? null : state.lang === 'hi' ? h('p', { class: 'note warn', lang: 'hi' }, t('hi', 'practice.noHindi')) : null, h('p', { class: 'stem', ...(hi ? { lang: 'hi' } : qlang) }, stem),
         h('form', { onsubmit: (e: Event) => { e.preventDefault(); check(); } }, ...partsUi,
           h('div', { class: 'actions' }, submitBtn,
             mode !== 'BOARD' ? hintBtn : null, mode === 'BEGINNER' ? stepBtn : null, nextBtn)),
         hintBox, workBox, feedback,
-        lab ? h('p', { class: 'after' }, 'Stuck? Review the ', h('a', { href: `#/lab/${lab.id}` }, lab.title), '.') : null));
+        lab ? h('p', { class: 'after' }, tr('prac.stuck'), h('a', { href: `#/lab/${lab.id}`, lang: 'en' }, lab.title), '.') : null));
     track(qArticle, qm); refresh();
   }
   onDispose(() => { if (current) unregister(current); });

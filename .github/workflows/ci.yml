@@ -53,6 +53,8 @@ jobs:
         run: NODE_PATH="$(npm root -g)" node e2e/web-app-crisis.cjs
       - name: Browser - Phase 1 look (home, labs index, header, icons)
         run: NODE_PATH="$(npm root -g)" node e2e/web-app-polish.cjs
+      - name: Browser - one language switch (English / Hindi draft)
+        run: NODE_PATH="$(npm root -g)" node e2e/web-app-lang.cjs
       - name: Browser - published site layout (/ and /legacy/)
         run: NODE_PATH="$(npm root -g)" node e2e/web-app-site.cjs
       - name: Browser - legacy app

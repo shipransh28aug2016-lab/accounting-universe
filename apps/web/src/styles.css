@@ -782,3 +782,9 @@ td.moved, .val.moved { background: var(--accent-bg); outline: 2px solid var(--ac
 
 /* the phone-menu rules target every <nav>; the breadcrumb is a <nav> too and must stay a row */
 @media (max-width: 720px) { nav.breadcrumb { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: .1rem .3rem; } nav.breadcrumb a, nav.breadcrumb span { border: 0; padding-left: 0; padding-right: 0; } }
+
+/* ---------- Phase 2: one language switch ---------- */
+.draft-banner { display: flex; flex-wrap: wrap; gap: .3rem .8rem; justify-content: center; text-align: center; font-size: .9rem; line-height: 1.5; padding: .6rem 1rem; background: var(--warn-bg); color: var(--ink); border-bottom: 3px solid var(--warn); }
+.draft-banner[hidden] { display: none; }
+.english-only-note { margin: 0 0 1rem; }
+:lang(hi) { line-height: 1.7; }
