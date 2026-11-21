@@ -94,7 +94,7 @@ export function labsIndex(): HTMLElement {
 
   return h('div', { class: 'labsindex' },
     h('header', { class: 'labhead' },
-      h('nav', { class: 'breadcrumb', 'aria-label': 'Breadcrumb' }, h('a', { href: '#/' }, 'Home'), h('span', { 'aria-hidden': 'true' }, ' \u203A '), h('span', { 'aria-current': 'page' }, 'Visual Labs')),
+      h('nav', { class: 'breadcrumb', 'aria-label': 'Breadcrumb' }, h('a', { href: '#/' }, 'Home'), h('span', { 'aria-hidden': 'true' }, ' \u203A '), h('span', { 'aria-current': 'page' }, 'Visual labs')),
       h('p', { class: 'eyebrow' }, 'Experiential labs'),
       h('h2', {}, 'Change the numbers, see the books respond'),
       h('p', { class: 'lead' }, 'Each lab teaches in three steps: Learn the idea, see a Worked example, then Try it with your own numbers. Pick a unit below or search.')),

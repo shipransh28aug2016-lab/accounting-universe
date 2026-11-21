@@ -3,10 +3,10 @@ import { NAV, hashFor, resolve } from '../../../apps/web/src/routes';
 
 /** The router and header logic as it was BEFORE the route table (kept here as an oracle so the refactor is provably behaviour-preserving). */
 const OLD_NAV: { label: string; match: (p: string[]) => boolean }[] = [
-  { label: 'HOME', match: p => p.length === 0 }, { label: 'CLASS XI', match: p => p[0] === 'class' && p[1] === 'XI' }, { label: 'CLASS XII', match: p => p[0] === 'class' && p[1] === 'XII' },
-  { label: 'VISUAL LABS', match: p => ['labs', 'lab', 'ledger', 'trainer', 'cas', 'cards', 'project'].includes(p[0] ?? '') },
-  { label: 'PRACTICE', match: p => ['practice', 'assignment', 'rescue'].includes(p[0] ?? '') }, { label: 'NOTES', match: p => p[0] === 'notes' }, { label: 'HELP', match: p => p[0] === 'tutor' },   // was 'AI TUTOR' until Phase 1: the page is an offline helper, not an AI
-  { label: 'MY PROGRESS', match: p => p[0] === 'progress' }, { label: 'TEACHER DASHBOARD', match: p => p[0] === 'teacher' },
+  { label: 'Home', match: p => p.length === 0 }, { label: 'Class XI', match: p => p[0] === 'class' && p[1] === 'XI' }, { label: 'Class XII', match: p => p[0] === 'class' && p[1] === 'XII' },
+  { label: 'Visual labs', match: p => ['labs', 'lab', 'ledger', 'trainer', 'cas', 'cards', 'project'].includes(p[0] ?? '') },
+  { label: 'Practice', match: p => ['practice', 'assignment', 'rescue'].includes(p[0] ?? '') }, { label: 'Notes', match: p => p[0] === 'notes' }, { label: 'Help', match: p => p[0] === 'tutor' },   // was 'AI tutor' until Phase 1: the page is an offline helper, not an AI
+  { label: 'My progress', match: p => p[0] === 'progress' }, { label: 'Teacher dashboard', match: p => p[0] === 'teacher' },
 ];
 const oldNav = (p: string[]) => OLD_NAV.find(n => n.match(p))?.label ?? null;
 const oldPage = (p: string[]) => {
@@ -26,7 +26,7 @@ describe('route table', () => {
     expect(NAV.map(n => n.key)).toEqual(OLD_NAV.map(n => n.label));
     for (const n of NAV) expect(resolve(n.hash.replace(/^#\/?/, '').split('/').filter(Boolean)).nav, n.key).toBe(n.key);
   });
-  it('pages added after the refactor resolve too', () => { expect(resolve(['crisis'])).toEqual({ id: 'crisis', nav: 'VISUAL LABS', rest: [] }); expect(resolve(['crisis', '42']).rest).toEqual(['42']); });
+  it('pages added after the refactor resolve too', () => { expect(resolve(['crisis'])).toEqual({ id: 'crisis', nav: 'Visual labs', rest: [] }); expect(resolve(['crisis', '42']).rest).toEqual(['42']); });
   it('passes the rest of the path to the page', () => { expect(resolve(['practice', 'dep-wdv', '7', 'board']).rest).toEqual(['dep-wdv', '7', 'board']); });
   it('hashFor encodes segments', () => { expect(hashFor('rescue', 'XI.2.brs')).toBe('#/rescue/XI.2.brs'); expect(hashFor('lab', 'a b')).toBe('#/lab/a%20b'); });
 });

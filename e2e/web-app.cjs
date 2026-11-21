@@ -24,7 +24,7 @@ const ok = (c, m) => { if (c) pass++; else { fails.push(m); console.log('  ✗',
     // ── shell & navigation
     await page.goto(BASE); await page.waitForSelector('.hero');
     const navLabels = await page.$$eval('nav a', as => as.map(a => a.textContent));
-    ok(JSON.stringify(navLabels) === JSON.stringify(['HOME', 'CLASS XI', 'CLASS XII', 'VISUAL LABS', 'PRACTICE', 'HELP', 'MY PROGRESS', 'TEACHER DASHBOARD']), 'nav labels: ' + navLabels);
+    ok(JSON.stringify(navLabels) === JSON.stringify(['Home', 'Class XI', 'Class XII', 'Visual labs', 'Practice', 'Notes', 'Help', 'My progress', 'Teacher dashboard']), 'nav labels: ' + navLabels);
     ok(await page.$eval('h2', e => e.textContent).then(t => t.includes('Learn Accounting by Doing Accounting')), 'tagline');
     await shot('home-desktop');
 
@@ -73,6 +73,8 @@ const ok = (c, m) => { if (c) pass++; else { fails.push(m); console.log('  ✗',
     // unbalanced manual entry is rejected with a reason
     await page.fill('#je-narr', 'test');
     const amts = await page.$$('.linerow input[aria-label="Amount"]');
+    const accts = await page.$$('.linerow input[aria-label="Account"]');
+    await accts[0].fill('Cash'); await accts[1].fill('Capital');
     await amts[0].fill('1000'); await amts[1].fill('900');
     await page.click('text=Post entry');
     ok((await page.$eval('.formerr', e => e.textContent)).includes('Dual aspect broken'), 'ledger: unbalanced entry refused');

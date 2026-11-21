@@ -72,7 +72,7 @@ const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}]/u;
 
     // ── nav and header
     const nav = await page.$$eval('nav a', as => as.map(a => a.textContent));
-    ok(nav.includes('HELP') && !nav.includes('AI TUTOR'), 'nav: "AI TUTOR" is now "HELP": ' + nav.join(','));
+    ok(nav.includes('Help') && !nav.includes('AI tutor'), 'nav: "AI TUTOR" is now "HELP": ' + nav.join(','));
     ok(await page.isHidden('#display-panel'), 'header: Display panel starts closed');
     await page.click('.display-btn');
     ok((await page.isVisible('#display-panel')) && (await page.getAttribute('.display-btn', 'aria-expanded')) === 'true', 'header: Display button opens the panel and says so (aria-expanded)');

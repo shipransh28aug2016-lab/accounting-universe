@@ -1,5 +1,6 @@
 import { KINDS, NOTES, SUBJECTS, audienceOf, canOpen, counts, filterNotes, redeemCode, type Filter, type NoteItem, type Plan } from '../../../../packages/curriculum/src';
 import { h, mount } from '../dom';
+import { icon } from '../icons';
 import { announce } from '../ui';
 
 const KEY = 'au-plan';
@@ -18,7 +19,7 @@ const chips = <T extends string>(label: string, key: keyof Filter, opts: readonl
 function card(n: NoteItem, p: Plan): HTMLElement {
   const g = canOpen(n, p), locked = !g.ok;
   return h('a', { class: 'card note-card' + (locked ? ' locked' : ''), href: `#/notes/${n.id}`, 'data-note': n.id, 'data-locked': String(locked) },
-    h('div', { class: 'note-top' }, h('span', { class: 'chip' }, `${n.subject} · ${n.cls}`), h('span', { class: 'tier ' + (locked ? 'pro' : 'free') }, locked ? '🔒 Pro' : n.tier === 'FREE' ? 'Free' : 'Pro ✓')),
+    h('div', { class: 'note-top' }, h('span', { class: 'chip' }, `${n.subject} · ${n.cls}`), h('span', { class: 'tier ' + (locked ? 'pro' : 'free') }, locked ? 'Pro' : n.tier === 'FREE' ? 'Free' : 'Pro ✓')),
     h('h3', {}, n.title), h('p', {}, n.summary), h('small', { class: 'note-meta' }, `${KINDS[n.kind]} · ${n.size}`));
 }
 
@@ -68,7 +69,7 @@ function notePage(id: string): HTMLElement {
   void import('../notes-bodies').then(({ BODIES, PRO_PLACEHOLDER }) => {
     const paras = BODIES[n.id] ?? PRO_PLACEHOLDER;
     mount(body, ...(g.ok ? paras : paras.slice(0, 1)).map(t => h('p', {}, t)));
-    if (!g.ok) body.appendChild(h('div', { class: 'paywall', 'data-why': g.reason }, h('p', { class: 'fade' }, '…'), h('p', {}, h('b', {}, '🔒 The rest is Pro. ')), h('p', { class: 'note' }, g.reason), h('a', { class: 'btn', href: '#/notes' }, 'See plans and unlock')));
+    if (!g.ok) body.appendChild(h('div', { class: 'paywall', 'data-why': g.reason }, h('p', { class: 'fade' }, '…'), h('p', {}, h('b', {}, icon('lock', 16), ' The rest is Pro. ')), h('p', { class: 'note' }, g.reason), h('a', { class: 'btn', href: '#/notes' }, 'See plans and unlock')));
   });
   const head = h('header', { class: 'labhead' }, h('p', { class: 'eyebrow' }, `${SUBJECTS[n.subject]} · Class ${n.cls} · ${KINDS[n.kind]} · ${audienceOf(n.kind) === 'TEACHER' ? 'Teacher' : 'Student'}`), h('h2', {}, n.title), h('p', { class: 'lead' }, n.summary));
   const dl = g.ok && n.file ? h('p', {}, h('a', { class: 'btn', href: `./notes/${n.file}`, download: '' }, `Download (${n.size})`)) : null;
